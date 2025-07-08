@@ -73,4 +73,65 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         assert r.generate_last_name() == "Mockname"
         mock_core.assert_called_once_with(r.SURNAME_PATH)
 
+    def test_generate_email(self):
+        """
+        Tests generate_email with known input, verifies format, and asserts provider.
+        """
+        first = "MockFirst"
+        last = "MockLast"
+
+        generated_email = r.generate_email(first, last)
+        
+
+        assert '@' in generated_email
+        assert generated_email.endswith('.com')
+
+        match = re.match(r"([a-z]+)\.([a-z]+)@([a-z]+)\.com", generated_email)
+        assert match is not None, (
+            f"Email format '{generated_email}' did not match expected pattern.")
+
+        extracted_first = match.group(1)
+        extracted_last = match.group(2)
+        extracted_provider = match.group(3)
+
+        assert extracted_first == first.lower()
+        assert extracted_last == last.lower()
+
+        expected_providers = ["aol", "gmail", "outlook", "yahoo", "icloud", "yandex"]
+        assert extracted_provider in expected_providers
+
+    def test_generate_age(self):
+        """
+        Tests that generate_age returns an integer within the expected range (1 to 100).
+        """
+        age = r.generate_age()
+        assert age >= 1
+        assert age <= 100
+
+    def test_generate_phone_num(self):
+        """
+        Tests that generate_phone_num returns a string matching the expected phone format.
+        """
+        phone_pattern = r"^\d{5} \d{3} \d{3}$"
+        phone_num = r.generate_phone_num()
+        assert re.match(phone_pattern, phone_num) is not None, \
+            f"Phone number '{phone_num}' does not match expected format '{phone_pattern}'"
+        assert isinstance(phone_num, str)
+
+    def test_generate_occupation(self):
+        """
+        Tests key aspects of the generate_occupation function with two asserts.
+        """
+        expected_adult_jobs = [
+            "cook", "actor", "programmer", "doctor", "dentist",
+            "uber driver", "photographer", "astronaut", "policeman"
+        ]
+        adult_age = 30
+        occupation_adult = r.generate_occupation(adult_age)
+        assert occupation_adult in expected_adult_jobs
+
+        child_age = 5
+        occupation_child = r.generate_occupation(child_age)
+        assert occupation_child == "child"
+
 
