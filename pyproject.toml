@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "person-generator-scriptsanddata" # The actual Python package name
+version = "0.0.1" # Initial version, as per our plan
+description = "A Python project to generate random person attributes"
+readme = "README.md"
+authors = [ { name="Scripts and Data" }, ]
+requires-python = ">=3.9"
+# --- FIX FOR DEPRECATION WARNING ---
+license = "GPL-3.0-only" # Use the SPDX identifier for GNU General Public License v3.0 only
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-mock>=3.0",
+]
+
+# --- FIX FOR MULTIPLE TOP-LEVEL PACKAGES ERROR ---
+[tool.setuptools]
+packages = ["person_generator"] 
