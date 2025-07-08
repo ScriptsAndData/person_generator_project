@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "person-generator-scriptsanddata" # The actual Python package name
-version = "0.0.1" # Initial version, as per our plan
+version = "0.0.2" # Initial version, as per our plan
 description = "A Python project to generate random person attributes"
 readme = "README.md"
 authors = [ { name="Scripts and Data" }, ]
@@ -21,3 +21,11 @@ dev = [
 # --- FIX FOR MULTIPLE TOP-LEVEL PACKAGES ERROR ---
 [tool.setuptools]
 packages = ["person_generator"] 
+
+# Pytest specific configuration
+[tool.pytest.ini_options]
+pythonpath = ["."] # Add current directory to Python path so 'person_generator' can be imported
+testpaths = ["pytests", "unittests"] # Tell pytest where to find *all* your tests by default
+# If you only want pytest to run its own tests, you'd do:
+# testpaths = ["pytests"]
+# Then you'd run unittest separately.
