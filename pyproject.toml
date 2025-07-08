@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "person-generator-scriptsanddata" # The actual Python package name
-version = "0.0.2" # Initial version, as per our plan
+version = "0.0.3" # Initial version, as per our plan
 description = "A Python project to generate random person attributes"
 readme = "README.md"
 authors = [ { name="Scripts and Data" }, ]
@@ -29,3 +29,7 @@ testpaths = ["pytests", "unittests"] # Tell pytest where to find *all* your test
 # If you only want pytest to run its own tests, you'd do:
 # testpaths = ["pytests"]
 # Then you'd run unittest separately.
+
+# Include non-Python files (like your data files)
+[tool.setuptools.package-data]
+"person_generator.data" = ["*.first", "*.last"]
