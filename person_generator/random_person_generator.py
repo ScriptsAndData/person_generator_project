@@ -70,4 +70,34 @@ def generate_occupation(age):
         job = "child"
     return job
 
+def generate_person_dict():
+    """Returns a dictionary object consisting of the all the person attributes"""
+    sex = select_sex()
+    first_name = generate_first_name(sex)
+    last_name = generate_last_name()
+    email = generate_email(first_name, last_name)
+    age = generate_age()
+    job = generate_occupation(age)
+    phone_num = generate_phone_num()
 
+    pdict = {
+        "first_name": first_name,
+        "last_name": last_name,
+        "sex": sex,
+        "email": email,
+        "age": age,
+        "job": job,
+        "phone_num": phone_num
+    }
+    return pdict
+
+# Example usage if you run this file directly (not through unittest)
+if __name__ == '__main__':
+    try:
+        person_dict = generate_person_dict()
+        print(f"person_dict:   {str(person_dict)}")
+    except FileNotFoundError as e:
+        print(e)
+    except IndexError as e:
+        print("Error: names list was empty. Check data file or parsing logic.")
+        print(e)

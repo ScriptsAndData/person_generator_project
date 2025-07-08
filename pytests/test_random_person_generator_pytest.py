@@ -1,3 +1,4 @@
+# pytests/test_random_person_generator_pytest.py
 """
 Pytest suite for the random_person_generator module.
 
@@ -81,7 +82,6 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         last = "MockLast"
 
         generated_email = r.generate_email(first, last)
-        
 
         assert '@' in generated_email
         assert generated_email.endswith('.com')
@@ -134,4 +134,46 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         occupation_child = r.generate_occupation(child_age)
         assert occupation_child == "child"
 
+    # For multiple mocks, using mocker.patch inside the function is often cleaner
+    # than stacking decorators, as it avoids argument order issues.
+    def test_generate_person_details_dict_full_mock(self, mocker: MockerFixture):
+        """
+        Tests generate_random_person_details_dict by mocking all its dependencies
+        and asserting the final dictionary content.
+        """
+        # Patching with mocker.patch (no decorators needed)
+        mock_select_sex = mocker.patch(f"{RPG}.select_sex", return_value="Male")
+        mock_generate_first_name = mocker.patch(
+            f"{RPG}.generate_first_name", return_value="MockFirst")
+        mock_generate_last_name = mocker.patch(
+            f"{RPG}.generate_last_name", return_value="MockLast")
+        mock_generate_email = mocker.patch(
+            f"{RPG}.generate_email", return_value="mockfirst.mocklast@example.com")
+        mock_generate_age = mocker.patch(f"{RPG}.generate_age", return_value=30)
+        mock_generate_occupation = mocker.patch(
+            f"{RPG}.generate_occupation", return_value="programmer")
+        mock_generate_phone_num = mocker.patch(
+            f"{RPG}.generate_phone_num", return_value="03125 473 263")
 
+        generated_dict = r.generate_person_dict()
+
+        expected_dict = {
+            "first_name": "MockFirst",
+            "last_name": "MockLast",
+            "sex": "Male",
+            "email": "mockfirst.mocklast@example.com",
+            "age": 30,
+            "job": "programmer",
+            "phone_num": "03125 473 263"
+        }
+
+        assert generated_dict == expected_dict
+
+        # Assert calls (no change needed here for assert_called_once_with)
+        mock_select_sex.assert_called_once()
+        mock_generate_first_name.assert_called_once_with("Male")
+        mock_generate_last_name.assert_called_once()
+        mock_generate_email.assert_called_once_with("MockFirst", "MockLast")
+        mock_generate_age.assert_called_once()
+        mock_generate_occupation.assert_called_once_with(30)
+        mock_generate_phone_num.assert_called_once()

@@ -3,24 +3,37 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "person-generator-scriptsanddata" # The actual Python package name
-version = "0.0.5" # Initial version, as per our plan
-description = "A Python project to generate random person attributes"
+# the name used to 'pip install'.
+# all lowercase and use hyphens for a PyPI package name.
+name = "person-generator-scriptsanddata"
+version = "0.1.0"
+description = "A package for generating random person details"
 readme = "README.md"
 authors = [ { name="Scripts and Data" }, ]
-requires-python = ">=3.9"
-# --- FIX FOR DEPRECATION WARNING ---
-license = "GPL-3.0-only" # Use the SPDX identifier for GNU General Public License v3.0 only
+requires-python = ">=3.8"
+license = { file = "LICENSE" }
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.0",
-    "pytest-mock>=3.0",
+    "pytest",
+    "pytest-mock",
 ]
 
-# --- FIX FOR MULTIPLE TOP-LEVEL PACKAGES ERROR ---
+[project.urls]
+"Homepage" = "https://github.com/ScriptsAndData/person-generator"
+"Bug Tracker" = "https://github.com/ScriptsAndData/person-generator/issues"
+"Repository" = "https://github.com/ScriptsAndData/person-generator"
+
+# This tells setuptools where to find your source code.
+# It means the actual Python package (person_generator/) is in the current directory.
+# If your package was in a 'src' directory (e.g., person_generator_project/src/person_generator/),
+# you'd use 'src' here.
+# For your current structure, '.' works if you remove the top-level __init__.py
+# Or, 'person_generator' if you explicitly want to tell setuptools that the root of your *source*
+# is the 'person_generator' directory. The most common is using 'src' as the package root.
+# Let's stick to the simplest working version for now (no 'src' folder).
 [tool.setuptools]
-packages = ["person_generator"] 
+packages = ["person_generator"] # Explicitly list your package(s)
 
 # Pytest specific configuration
 [tool.pytest.ini_options]
@@ -33,3 +46,4 @@ testpaths = ["pytests", "unittests"] # Tell pytest where to find *all* your test
 # Include non-Python files (like your data files)
 [tool.setuptools.package-data]
 "person_generator.data" = ["*.first", "*.last"]
+

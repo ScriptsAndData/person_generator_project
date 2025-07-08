@@ -1,11 +1,15 @@
 """
 Unit tests for the random_person_generator module.
+
+This module contains tests for functions that generate random person details
+such as names, email, age, occupation, and phone numbers.
 """
 import unittest
 from unittest.mock import patch, mock_open
 import textwrap
 import re
 from person_generator import random_person_generator as r
+RPG = f"{r.__name__}"
 
 class TestRandomPerson(unittest.TestCase):
     """
@@ -139,6 +143,49 @@ class TestRandomPerson(unittest.TestCase):
         occupation_child = r.generate_occupation(child_age)
         self.assertEqual(occupation_child, "child",
                          f"Expected 'child' for age {child_age}")
+
+    @patch(f"{RPG}.select_sex", return_value="Male")
+    @patch(f"{RPG}.generate_first_name", return_value="MockFirst")
+    @patch(f"{RPG}.generate_last_name", return_value="MockLast")
+    @patch(f"{RPG}.generate_email", return_value="mockfirst.mocklast@example.com")
+    @patch(f"{RPG}.generate_age", return_value=30)
+    @patch(f"{RPG}.generate_occupation", return_value="programmer")
+    @patch(f"{RPG}.generate_phone_num", return_value="03125 473 263")
+    def test_generate_person_details_dict_full_mock(self,
+                                                    mock_generate_phone,
+                                                    mock_select_random_job,
+                                                    mock_generate_random_age,
+                                                    mock_generate_random_email,
+                                                    mock_select_last_name,
+                                                    mock_generate_gender_matching_first_name,
+                                                    mock_select_sex):
+        """
+        Tests generate_random_person_details_dict by mocking all its dependencies
+        and asserting the final dictionary content.
+        """
+        generated_dict = r.generate_person_dict()
+
+        expected_dict = {
+            "first_name": "MockFirst",
+            "last_name": "MockLast",
+            "sex": "Male",
+            "email": "mockfirst.mocklast@example.com",
+            "age": 30,
+            "job": "programmer",
+            "phone_num": "03125 473 263"
+        }
+
+        # Assert that the generated dictionary matches the expected dictionary
+        self.assertEqual(generated_dict, expected_dict)
+
+        # Optional: Assert that the mocked functions were called (good for comprehensive tests)
+        mock_select_sex.assert_called_once()
+        mock_generate_gender_matching_first_name.assert_called_once_with("Male")
+        mock_select_last_name.assert_called_once()
+        mock_generate_random_email.assert_called_once_with("MockFirst", "MockLast")
+        mock_generate_random_age.assert_called_once()
+        mock_select_random_job.assert_called_once_with(30) # Called with mocked age
+        mock_generate_phone.assert_called_once()
 
 # This block allows the tests to be run directly from the command line,
 # e.g., by executing 'python your_test_file.py'.
