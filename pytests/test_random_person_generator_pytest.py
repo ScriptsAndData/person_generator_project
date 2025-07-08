@@ -43,3 +43,34 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
 
         mock_file.assert_called_once_with("dummy_path.txt", "r", encoding='utf-8')
         mock_choice.assert_called_once_with(["MOCKJAMES", "MOCKJOHN", "MOCKROBERT"])
+
+    def test_generate_first_name_male(self, mocker: MockerFixture):
+        """
+        Tests that generate_first_name returns a male name 
+        by mocking the underlying name selection.
+        """
+        mock_core = mocker.patch(f"{RPG}.select_random_name_from_file", return_value="MockMaleName")
+
+        assert r.generate_first_name("Male") == "MockMaleName"
+        mock_core.assert_called_once_with(r.GEN_MALE_PATH)
+
+    def test_generate_first_name_female(self, mocker: MockerFixture):
+        """
+        Tests that generate_first_name returns a female name 
+        by mocking the underlying name selection.
+        """
+        mock_core = mocker.patch(f"{RPG}.select_random_name_from_file", return_value="MockFemaleName")
+
+        assert r.generate_first_name("Female") == "MockFemaleName"
+        mock_core.assert_called_once_with(r.GEN_FEMALE_PATH)
+
+    def test_generate_last_name_wrapper(self, mocker: MockerFixture):
+        """
+        Tests that generate_last_name correctly calls the underlying
+        name selection with the surname path.
+        """
+        mock_core = mocker.patch(f"{RPG}.select_random_name_from_file", return_value="Mockname")
+        assert r.generate_last_name() == "Mockname"
+        mock_core.assert_called_once_with(r.SURNAME_PATH)
+
+
