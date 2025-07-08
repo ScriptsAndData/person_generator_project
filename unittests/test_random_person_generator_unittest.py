@@ -66,6 +66,80 @@ class TestRandomPerson(unittest.TestCase):
             self.assertEqual(r.generate_last_name(), "Mockname")
             mock_core.assert_called_once_with(r.SURNAME_PATH)
 
+    def test_generate_email(self):
+        """
+        Tests generate_email with known input, verifies format, and asserts provider.
+        """
+        first = "MockFirst"
+        last = "MockLast"
+
+        # Call the function under test (allowing random.choice to pick a real provider)
+        generated_email = r.generate_email(first, last)
+
+        # 1. Verify the format of the email address with '@' and .com
+        self.assertIn('@', generated_email, "Email should contain '@'")
+        self.assertTrue(generated_email.endswith('.com'), "Email should end with '.com'")
+
+        # Use regex to extract parts: (first_name).(last_name)@(provider).com
+        match = re.match(r"([a-z]+)\.([a-z]+)@([a-z]+)\.com", generated_email)
+        self.assertIsNotNone(match, f"Email format '{generated_email}' "
+                             "did not match expected pattern.")
+
+        extracted_first = match.group(1)
+        extracted_last = match.group(2)
+        extracted_provider = match.group(3)
+
+        # 2. Extract first name and last name and assertEqual on each of them
+        self.assertEqual(extracted_first, first.lower(),"Extracted first name "
+            f"'{extracted_first}' does not match expected '{first.lower()}'")
+        self.assertEqual(extracted_last, last.lower(), "Extracted last name "
+            f"'{extracted_last}' does not match expected '{last.lower()}'")
+
+        # 3. Extract the returned provider and assertIn the list of providers
+        expected_providers = ["aol", "gmail", "outlook", "yahoo", "icloud", "yandex"]
+        self.assertIn(extracted_provider, expected_providers,
+                      f"Extracted provider '{extracted_provider}' not in expected list.")
+
+    def test_generate_age(self):
+        """
+        Tests that generate_age returns an integer within the expected range (1 to 100).
+        """
+        self.assertGreaterEqual(r.generate_age(),1,"Age lesser than 1")
+        self.assertLessEqual(r.generate_age(),100,"Age greater than 100")
+
+    def test_generate_phone_num(self):
+        """
+        Tests that generate_phone_num returns a string matching the expected phone format.
+        """
+        phone_pattern = r"^\d{5} \d{3} \d{3}$"
+        phone_num = r.generate_phone_num()
+        self.assertRegex(phone_num, phone_pattern,
+          f"Phone number '{phone_num}' does not match expected format '{phone_pattern}'")
+        self.assertIsInstance(phone_num, str) # Also check type
+
+    def test_generate_occupation(self):
+        """
+        Tests key aspects of the generate_occupation function with two asserts.
+        """
+        # Assert 1: Adult job selection
+        # Define the expected list of adult jobs, mirroring the function's internal list
+        expected_adult_jobs = [
+            "cook", "actor", "programmer", "doctor", "dentist",
+            "uber driver", "photographer", "astronaut", "policeman"
+        ]
+        # Test with an age clearly in the adult range
+        adult_age = 30
+        occupation_adult = r.generate_occupation(adult_age)
+        self.assertIn(occupation_adult, expected_adult_jobs,
+                      f"Expected an adult job from {expected_adult_jobs} for age {adult_age}")
+
+        # Assert 2: Child job selection
+        # Test with an age clearly in the child range
+        child_age = 5
+        occupation_child = r.generate_occupation(child_age)
+        self.assertEqual(occupation_child, "child",
+                         f"Expected 'child' for age {child_age}")
+
 # This block allows the tests to be run directly from the command line,
 # e.g., by executing 'python your_test_file.py'.
 if __name__ == '__main__':

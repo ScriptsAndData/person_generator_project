@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "person-generator-scriptsanddata" # The actual Python package name
-version = "0.0.4" # Initial version, as per our plan
+version = "0.0.5" # Initial version, as per our plan
 description = "A Python project to generate random person attributes"
 readme = "README.md"
 authors = [ { name="Scripts and Data" }, ]

@@ -42,4 +42,32 @@ def generate_last_name():
     """
     return select_random_name_from_file(SURNAME_PATH)
 
+def generate_email(first_name, last_name):
+    """
+    Returns an email address with a randomly selected surname from the surname file.
+    """
+    service_provider = choice(["aol", "gmail", "outlook", "yahoo", "icloud", "yandex"])
+    return f"{first_name.lower()}.{last_name.lower()}@{service_provider}.com"
+
+def generate_age():
+    """Returns randomly generated age"""
+    return randint(1, 100)
+
+def generate_phone_num():
+    """Returns randomly generated phone number"""
+    return f"0{randint(1000, 9999)} {randint(100, 999)} {randint(0, 999):03d}"
+
+def generate_occupation(age):
+    """Returns randomly generated job, modified by age"""
+    if age > 67:
+        job = "retired"
+    elif age >= 18:
+        job = choice(["cook", "actor", "programmer", "doctor", "dentist",
+                      "uber driver", "photographer", "astronaut", "policeman"])
+    elif age >=16:
+        job = "student"
+    else:
+        job = "child"
+    return job
+
 
