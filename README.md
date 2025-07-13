@@ -132,7 +132,7 @@ To run only the unittest tests (using unittest runner):
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the GNU General Public License v3.0 Only - see the LICENSE file for details.
 
 ## Author
 
