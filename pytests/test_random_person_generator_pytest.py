@@ -60,7 +60,8 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         Tests that generate_first_name returns a female name 
         by mocking the underlying name selection.
         """
-        mock_core = mocker.patch(f"{RPG}.select_random_name_from_file", return_value="MockFemaleName")
+        mock_core = mocker.patch(f"{RPG}.select_random_name_from_file",
+                                 return_value="MockFemaleName")
 
         assert r.generate_first_name("Female") == "MockFemaleName"
         mock_core.assert_called_once_with(r.GEN_FEMALE_PATH)
@@ -147,6 +148,7 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         assert r.generate_occupation(17) == "Student"
         assert r.generate_occupation(30) == "MockJob"
         assert r.generate_occupation(80) == "Retired"
+        mock_core.assert_called_once_with(r.JOBS_PATH)
 
     # For multiple mocks, using mocker.patch inside the function is often cleaner
     # than stacking decorators, as it avoids argument order issues.
