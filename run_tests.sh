@@ -1,4 +1,4 @@
 #!/bin/bash
 set -x
-pytest -v
+pytest -v pytests/
 # python -m unittest discover unittests -v

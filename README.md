@@ -28,6 +28,15 @@ The `person_generator` package can generate:
 * Randomly formatted phone numbers.
 * A comprehensive dictionary of all generated person details.
 
+## Development Notes
+
+This project is currently undergoing active test-driven development (TDD).
+
+* **Pytests:** The `pytests` suite is updated and passing, reflecting the latest feature implementations (e.g., job/occupation generation, user input).
+* **Unittests:** The `unittests` suite is currently expected to fail. It will be updated in a subsequent development cycle to align with the new functionalities.
+
+To run only the `pytests`, use the command: `pytest pytests/` or `./run_tests.sh`
+
 ## Project Structure
 The project adheres to a standard and well-organized Python package structure, promoting clarity and maintainability
 ```
@@ -40,7 +49,8 @@ The project adheres to a standard and well-organized Python package structure, p
 │   │   ├── init.py
 │   │   ├── dist.all.last
 │   │   ├── dist.female.first
-│   │   └── dist.male.first
+│   │   ├── dist.male.first
+│   │   └── list.occupations
 │   └── random_person_generator.py
 ├── pyproject.toml
 ├── pytests

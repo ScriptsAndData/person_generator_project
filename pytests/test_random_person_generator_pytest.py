@@ -118,21 +118,35 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
             f"Phone number '{phone_num}' does not match expected format '{phone_pattern}'"
         assert isinstance(phone_num, str)
 
-    def test_generate_occupation(self):
+    def test_select_random_job_from_file(self, mocker: MockerFixture):
+        """
+        Tests that select_random_job_from_file correctly reads, parses,
+        and selects a name from a mocked file.
+        """
+        fake_file_data = textwrap.dedent("""\
+            MOCKDOCTOR
+            MOCKNURSE
+            MOCKSURGEON
+        """)
+
+        # Using mocker.patch instead of unittest.mock.patch directly
+        mock_file = mocker.patch("builtins.open", mock_open(read_data=fake_file_data))
+        mock_choice = mocker.patch(f"{RPG}.choice", return_value="mockdoctor")
+
+        assert r.select_random_job_from_file("dummy_path.txt") == "Mockdoctor"
+
+        mock_file.assert_called_once_with("dummy_path.txt", "r", encoding='utf-8')
+        mock_choice.assert_called_once_with(["MOCKDOCTOR", "MOCKNURSE", "MOCKSURGEON"])
+
+    def test_generate_occupation(self, mocker: MockerFixture):
         """
         Tests key aspects of the generate_occupation function with two asserts.
         """
-        expected_adult_jobs = [
-            "cook", "actor", "programmer", "doctor", "dentist",
-            "uber driver", "photographer", "astronaut", "policeman"
-        ]
-        adult_age = 30
-        occupation_adult = r.generate_occupation(adult_age)
-        assert occupation_adult in expected_adult_jobs
-
-        child_age = 5
-        occupation_child = r.generate_occupation(child_age)
-        assert occupation_child == "child"
+        mock_core = mocker.patch(f"{RPG}.select_random_job_from_file", return_value="MockJob")
+        assert r.generate_occupation(5) == "Child"
+        assert r.generate_occupation(17) == "Student"
+        assert r.generate_occupation(30) == "MockJob"
+        assert r.generate_occupation(80) == "Retired"
 
     # For multiple mocks, using mocker.patch inside the function is often cleaner
     # than stacking decorators, as it avoids argument order issues.

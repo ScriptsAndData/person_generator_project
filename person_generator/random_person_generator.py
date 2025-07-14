@@ -4,13 +4,13 @@ in a python dictionary
 """
 import re
 from random import choice, randint
-
 from importlib.resources import files as resource_files
 
 _DATA_DIR = resource_files('person_generator.data')
 GEN_MALE_PATH = _DATA_DIR / "dist.male.first"
 GEN_FEMALE_PATH = _DATA_DIR / "dist.female.first"
 SURNAME_PATH = _DATA_DIR / "dist.all.last"
+JOBS_PATH = _DATA_DIR / "list.occupations"
 
 def select_sex():
     """
@@ -57,17 +57,27 @@ def generate_phone_num():
     """Returns randomly generated phone number"""
     return f"0{randint(1000, 9999)} {randint(100, 999)} {randint(0, 999):03d}"
 
+def select_random_job_from_file(file_path):
+    """
+    Reads the file containing jobs, parses it, selects and returns a random name.
+    """
+    all_jobs = []
+    with open(file_path, 'r', encoding='utf-8') as input_data_io:
+        for line in input_data_io:
+            thisjob= ''.join(re.findall('[a-zA-Z ]+', line))
+            all_jobs.append(thisjob)
+    return choice(all_jobs).title()
+
 def generate_occupation(age):
     """Returns randomly generated job, modified by age"""
     if age > 67:
-        job = "retired"
+        job = "Retired"
     elif age >= 18:
-        job = choice(["cook", "actor", "programmer", "doctor", "dentist",
-                      "uber driver", "photographer", "astronaut", "policeman"])
+        job = select_random_job_from_file(JOBS_PATH)
     elif age >=16:
-        job = "student"
+        job = "Student"
     else:
-        job = "child"
+        job = "Child"
     return job
 
 def generate_person_dict():
@@ -95,7 +105,12 @@ def generate_person_dict():
 if __name__ == '__main__':
     try:
         person_dict = generate_person_dict()
-        print(f"person_dict:   {str(person_dict)}")
+        # print(f"person_dict:   {str(person_dict)}")
+        print("\nPerson Details:\n" + "=" * 40)
+        for key, value in person_dict.items():
+            # print(f"{key.replace('_', ' ').title():<15} : {value}")
+            print(f"{key.title():<10} : {value}")
+        print("=" * 40)
     except FileNotFoundError as e:
         print(e)
     except IndexError as e:
