@@ -145,7 +145,6 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         """
         mock_core = mocker.patch(f"{RPG}.select_random_job_from_file", return_value="MockJob")
         assert r.generate_occupation(5) == "Child"
-        assert r.generate_occupation(17) == "Student"
         assert r.generate_occupation(30) == "MockJob"
         assert r.generate_occupation(80) == "Retired"
         mock_core.assert_called_once_with(r.JOBS_PATH)

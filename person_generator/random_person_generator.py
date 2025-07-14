@@ -4,6 +4,8 @@ in a python dictionary
 """
 import re
 from random import choice, randint
+import os
+import argparse # Import argparse
 from importlib.resources import files as resource_files
 
 _DATA_DIR = resource_files('person_generator.data')
@@ -12,10 +14,14 @@ GEN_FEMALE_PATH = _DATA_DIR / "dist.female.first"
 SURNAME_PATH = _DATA_DIR / "dist.all.last"
 JOBS_PATH = _DATA_DIR / "list.occupations"
 
-def select_sex():
+def select_sex(gender_choice=None):
     """
     Randomly selects and returns either "Male" or "Female"
     """
+    if gender_choice == "male":
+        return "Male"
+    if gender_choice == "female":
+        return "Female"
     return choice(["Male","Female"])
 
 def select_random_name_from_file(file_path):
@@ -49,9 +55,9 @@ def generate_email(first_name, last_name):
     service_provider = choice(["aol", "gmail", "outlook", "yahoo", "icloud", "yandex"])
     return f"{first_name.lower()}.{last_name.lower()}@{service_provider}.com"
 
-def generate_age():
+def generate_age(min_age=10, max_age=85):
     """Returns randomly generated age"""
-    return randint(1, 100)
+    return randint(min_age, max_age)
 
 def generate_phone_num():
     """Returns randomly generated phone number"""
@@ -74,19 +80,17 @@ def generate_occupation(age):
         job = "Retired"
     elif age >= 18:
         job = select_random_job_from_file(JOBS_PATH)
-    elif age >=16:
-        job = "Student"
     else:
         job = "Child"
     return job
 
-def generate_person_dict():
+def generate_person_dict(gender_choice=None, age_min=18, age_max=65):
     """Returns a dictionary object consisting of the all the person attributes"""
-    sex = select_sex()
+    sex = select_sex(gender_choice)
     first_name = generate_first_name(sex)
     last_name = generate_last_name()
     email = generate_email(first_name, last_name)
-    age = generate_age()
+    age = generate_age(age_min, age_max)
     job = generate_occupation(age)
     phone_num = generate_phone_num()
 
@@ -101,18 +105,73 @@ def generate_person_dict():
     }
     return pdict
 
-# Example usage if you run this file directly (not through unittest)
+def format_person_for_display(person_data):
+    formatted_output = "-----------------------------------\n"
+    formatted_output += "           PERSON DETAILS          \n"
+    formatted_output += "-----------------------------------\n"
+    for key, value in person_data.items():
+        formatted_output += f"{key:<15}: {value}\n"
+    formatted_output += "-----------------------------------\n"
+    return formatted_output
+
+# Main execution block
 if __name__ == '__main__':
-    try:
-        person_dict = generate_person_dict()
-        # print(f"person_dict:   {str(person_dict)}")
-        print("\nPerson Details:\n" + "=" * 40)
-        for key, value in person_dict.items():
-            # print(f"{key.replace('_', ' ').title():<15} : {value}")
-            print(f"{key.title():<10} : {value}")
-        print("=" * 40)
-    except FileNotFoundError as e:
-        print(e)
-    except IndexError as e:
-        print("Error: names list was empty. Check data file or parsing logic.")
-        print(e)
+    # 1. Set up argument parser
+    parser = argparse.ArgumentParser(
+        description="Generate random person details. Run in batch mode by default, or interactive mode with --interactive."
+    )
+    parser.add_argument(
+        '--interactive', '-i',
+        action='store_true', # This makes it a boolean flag: True if present, False if not
+        help='Run in interactive mode, prompting for gender and age range.'
+    )
+    # You could also add arguments for directly specifying gender/age in batch mode
+    # For example:
+    # parser.add_argument('--gender', choices=['male', 'female', 'random'], help='Specify gender (male, female, random) for batch mode.')
+
+
+    args = parser.parse_args()
+
+    # Initialize variables for person generation parameters
+    gender_to_generate = None # Default: let select_sex decide randomly
+    min_age_to_generate = 10  # Default
+    max_age_to_generate = 85  # Default
+
+    # 2. Check the switch and get input if interactive
+    if args.interactive:
+        print("--- Interactive Person Generation ---")
+        # Get gender input
+        while True:
+            gender_input = input("Enter desired gender (male/female/random, default: random): ").strip().lower()
+            if gender_input in ["male", "female", "random", ""]:
+                gender_to_generate = gender_input if gender_input else "random"
+                break
+            else:
+                print("Invalid gender choice. Please enter 'male', 'female', or 'random'.")
+
+        # Get age range input
+        while True:
+            try:
+                min_age_str = input(f"Enter minimum age (default {min_age_to_generate}): ").strip()
+                min_age_to_generate = int(min_age_str) if min_age_str else min_age_to_generate
+
+                max_age_str = input(f"Enter maximum age (default {max_age_to_generate}): ").strip()
+                max_age_to_generate = int(max_age_str) if max_age_str else max_age_to_generate
+
+                if min_age_to_generate > max_age_to_generate:
+                    print("Minimum age cannot be greater than maximum age. Please re-enter.")
+                    continue # Loop again for age input
+                break # Exit age input loop if valid
+            except ValueError:
+                print("Invalid age entered. Please enter a number.")
+
+    # 3. Generate the person using the determined parameters
+    person = generate_person_dict(
+        gender_choice=gender_to_generate,
+        age_min=min_age_to_generate,
+        age_max=max_age_to_generate
+    )
+
+    # 4. Display the generated person
+    print("\nGenerated Person:")
+    print(format_person_for_display(person))
