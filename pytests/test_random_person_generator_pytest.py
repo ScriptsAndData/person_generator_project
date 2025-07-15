@@ -166,11 +166,11 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
             f"{RPG}.generate_email", return_value="mockfirst.mocklast@example.com")
         mock_generate_age = mocker.patch(f"{RPG}.generate_age", return_value=30)
         mock_generate_occupation = mocker.patch(
-            f"{RPG}.generate_occupation", return_value="programmer")
+            f"{RPG}.generate_occupation", return_value="Programmer")
         mock_generate_phone_num = mocker.patch(
             f"{RPG}.generate_phone_num", return_value="03125 473 263")
 
-        generated_dict = r.generate_person_dict()
+        generated_dict = r.generate_person_dict("",0,0)
 
         expected_dict = {
             "first_name": "MockFirst",
@@ -178,7 +178,7 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
             "sex": "Male",
             "email": "mockfirst.mocklast@example.com",
             "age": 30,
-            "job": "programmer",
+            "job": "Programmer",
             "phone_num": "03125 473 263"
         }
 
@@ -192,3 +192,51 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         mock_generate_age.assert_called_once()
         mock_generate_occupation.assert_called_once_with(30)
         mock_generate_phone_num.assert_called_once()
+
+    def test_format_person_for_display(self):
+        """
+        Tests the format_person_for_display function's output structure and content.
+
+        It verifies:
+        - The presence and correctness of the top and bottom border lines.
+        - The presence and text of the "PERSON DETAILS" header.
+        - The exact formatting and content of each key-value data line.
+        - The overall number of lines in the formatted output.
+        """
+        person_dict = {
+            "first_name": "MockFirst",
+            "last_name": "MockLast",
+            "sex": "Male",
+            "email": "mockfirst.mocklast@example.com",
+            "age": 30,
+            "job": "Programmer",
+            "phone_num": "03125 473 263"
+        }
+
+        actual_output = r.format_person_for_display(person_dict)
+        lines = actual_output.splitlines()
+
+       # 1. Test top border
+        assert lines[0] == "-----------------------------------"
+
+        # 2. Test header line
+        assert lines[1].strip() == "PERSON DETAILS"
+        assert len(lines[1]) == 14
+
+        # 3. Test middle border
+        assert lines[2] == "-----------------------------------"
+
+        # 4. Test data lines
+        assert "first_name     : MockFirst" in lines
+        assert "last_name      : MockLast" in lines
+        assert "sex            : Male" in lines
+        assert "email          : mockfirst.mocklast@example.com" in lines
+        assert "age            : 30" in lines
+        assert "job            : Programmer" in lines
+        assert "phone_num      : 03125 473 263" in lines
+
+        # 5. Test bottom border
+        assert lines[-1] == "-----------------------------------"
+
+        # 6. Basic structural check - count lines
+        assert len(lines) == 3 + len(person_dict) + 1 # 3 top border + 7 data lines + 1 bottom border

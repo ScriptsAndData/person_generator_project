@@ -4,7 +4,6 @@ in a python dictionary
 """
 import re
 from random import choice, randint
-import os
 import argparse # Import argparse
 from importlib.resources import files as resource_files
 
@@ -84,7 +83,7 @@ def generate_occupation(age):
         job = "Child"
     return job
 
-def generate_person_dict(gender_choice=None, age_min=18, age_max=65):
+def generate_person_dict(gender_choice, age_min, age_max):
     """Returns a dictionary object consisting of the all the person attributes"""
     sex = select_sex(gender_choice)
     first_name = generate_first_name(sex)
@@ -106,72 +105,90 @@ def generate_person_dict(gender_choice=None, age_min=18, age_max=65):
     return pdict
 
 def format_person_for_display(person_data):
+    """Formatted standard print for person data"""
     formatted_output = "-----------------------------------\n"
-    formatted_output += "           PERSON DETAILS          \n"
+    formatted_output += "PERSON DETAILS\n"
     formatted_output += "-----------------------------------\n"
     for key, value in person_data.items():
         formatted_output += f"{key:<15}: {value}\n"
     formatted_output += "-----------------------------------\n"
     return formatted_output
 
-# Main execution block
-if __name__ == '__main__':
-    # 1. Set up argument parser
+
+def _get_interactive_person_parameters():
+    """
+    Prompts the user for gender and age range and returns the validated inputs.
+    """
+    print("--- Interactive Person Generation ---")
+
+    gender_to_generate = "random" # Default for interactive if user presses enter
+    min_age_to_generate = 10     # Default for interactive if user presses enter
+    max_age_to_generate = 85     # Default for interactive if user presses enter
+
+    # Get gender input
+    while True:
+        gender_input = input("Enter desired gender (male/female/random, default: "
+                             f"{gender_to_generate}): ").strip().lower()
+        if gender_input in ["male", "female", "random", ""]:
+            gender_to_generate = gender_input if gender_input else gender_to_generate
+            break
+        print("Invalid gender choice. Please enter 'male', 'female', or 'random'.")
+
+    # Get age range input
+    while True:
+        try:
+            min_age_str = input(f"Enter minimum age (default {min_age_to_generate}): ").strip()
+            min_age_to_generate = int(min_age_str) if min_age_str else min_age_to_generate
+
+            max_age_str = input(f"Enter maximum age (default {max_age_to_generate}): ").strip()
+            max_age_to_generate = int(max_age_str) if max_age_str else max_age_to_generate
+
+            if min_age_to_generate > max_age_to_generate:
+                print("Minimum age cannot be greater than maximum age. Please re-enter.")
+                continue # Loop again for age input
+            break # Exit age input loop if valid
+        except ValueError:
+            print("Invalid age entered. Please enter a number.")
+    return gender_to_generate, min_age_to_generate, max_age_to_generate
+
+
+def main():
+    """
+    Parses command line options, controls either batch or interactive mode, and 
+    returns the generated person data
+    """
     parser = argparse.ArgumentParser(
-        description="Generate random person details. Run in batch mode by default, or interactive mode with --interactive."
+        description="Generate random person details. "
+        "Run in batch mode by default, or interactive mode with --interactive."
     )
     parser.add_argument(
         '--interactive', '-i',
-        action='store_true', # This makes it a boolean flag: True if present, False if not
+        action='store_true',
         help='Run in interactive mode, prompting for gender and age range.'
     )
-    # You could also add arguments for directly specifying gender/age in batch mode
-    # For example:
-    # parser.add_argument('--gender', choices=['male', 'female', 'random'], help='Specify gender (male, female, random) for batch mode.')
-
-
     args = parser.parse_args()
 
-    # Initialize variables for person generation parameters
-    gender_to_generate = None # Default: let select_sex decide randomly
-    min_age_to_generate = 10  # Default
-    max_age_to_generate = 85  # Default
+    gender_final = None # Default for generate_person_dict (random)
+    min_age_final = 10
+    max_age_final = 85
 
-    # 2. Check the switch and get input if interactive
     if args.interactive:
-        print("--- Interactive Person Generation ---")
-        # Get gender input
-        while True:
-            gender_input = input("Enter desired gender (male/female/random, default: random): ").strip().lower()
-            if gender_input in ["male", "female", "random", ""]:
-                gender_to_generate = gender_input if gender_input else "random"
-                break
-            else:
-                print("Invalid gender choice. Please enter 'male', 'female', or 'random'.")
+        gender_final, min_age_final, max_age_final = _get_interactive_person_parameters()
 
-        # Get age range input
-        while True:
-            try:
-                min_age_str = input(f"Enter minimum age (default {min_age_to_generate}): ").strip()
-                min_age_to_generate = int(min_age_str) if min_age_str else min_age_to_generate
-
-                max_age_str = input(f"Enter maximum age (default {max_age_to_generate}): ").strip()
-                max_age_to_generate = int(max_age_str) if max_age_str else max_age_to_generate
-
-                if min_age_to_generate > max_age_to_generate:
-                    print("Minimum age cannot be greater than maximum age. Please re-enter.")
-                    continue # Loop again for age input
-                break # Exit age input loop if valid
-            except ValueError:
-                print("Invalid age entered. Please enter a number.")
-
-    # 3. Generate the person using the determined parameters
+    # Pass parameters to the generation function
     person = generate_person_dict(
-        gender_choice=gender_to_generate,
-        age_min=min_age_to_generate,
-        age_max=max_age_to_generate
+        gender_choice=gender_final,
+        age_min=min_age_final,
+        age_max=max_age_final
     )
+    return person
 
-    # 4. Display the generated person
+
+if __name__ == '__main__':
+    # Call the main function and capture its return value
+    generated_person_data = main()
+
     print("\nGenerated Person:")
-    print(format_person_for_display(person))
+    print(format_person_for_display(generated_person_data))
+
+
