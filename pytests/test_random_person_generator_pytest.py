@@ -5,17 +5,30 @@ Pytest suite for the random_person_generator module.
 This module contains tests for functions that generate random person details
 such as names, email, age, occupation, and phone numbers.
 """
-import textwrap
 import re
-from unittest.mock import mock_open # mock_open still useful, even with pytest-mock
+import textwrap
+from unittest.mock import mock_open
 
-# For pytest-mock's mocker fixture (you need to 'pip install pytest-mock')
-from pytest_mock import MockerFixture
+import pytest
+from pytest_mock import MockerFixture 
 
 from person_generator import random_person_generator as r
 
 # Helper for patch targets (same as you used, works great here)
 RPG = f"{r.__name__}"
+
+BORDER = "-----------------------------------"
+
+MOCK_PERSON_DICT = {
+                    "first_name": "MockFirst",
+                    "last_name": "MockLast",
+                    "sex": "Male",
+                    "email": "mockfirst.mocklast@example.com",
+                    "age": 30,
+                    "job": "Programmer",
+                    "phone_num": "03125 473 263",
+                }
+
 
 class TestRandomPerson: # No inheritance from unittest.TestCase
     """
