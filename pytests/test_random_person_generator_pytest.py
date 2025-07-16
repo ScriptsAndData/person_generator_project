@@ -162,8 +162,6 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         assert r.generate_occupation(80) == "Retired"
         mock_core.assert_called_once_with(r.JOBS_PATH)
 
-    # For multiple mocks, using mocker.patch inside the function is often cleaner
-    # than stacking decorators, as it avoids argument order issues.
     def test_generate_person_details_dict_full_mock(self, mocker: MockerFixture):
         """
         Tests generate_random_person_details_dict by mocking all its dependencies
@@ -184,17 +182,7 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
             f"{RPG}.generate_phone_num", return_value="03125 473 263")
 
         generated_dict = r.generate_person_dict("",0,0)
-
-        expected_dict = {
-            "first_name": "MockFirst",
-            "last_name": "MockLast",
-            "sex": "Male",
-            "email": "mockfirst.mocklast@example.com",
-            "age": 30,
-            "job": "Programmer",
-            "phone_num": "03125 473 263"
-        }
-
+        expected_dict = MOCK_PERSON_DICT
         assert generated_dict == expected_dict
 
         # Assert calls (no change needed here for assert_called_once_with)
