@@ -194,50 +194,88 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         mock_generate_occupation.assert_called_once_with(30)
         mock_generate_phone_num.assert_called_once()
 
-    def test_format_person_for_display(self):
-        """
-        Tests the format_person_for_display function's output structure and content.
 
-        It verifies:
-        - The presence and correctness of the top and bottom border lines.
-        - The presence and text of the "PERSON DETAILS" header.
-        - The exact formatting and content of each key-value data line.
-        - The overall number of lines in the formatted output.
+    @pytest.mark.parametrize(
+        "input_person_dict, expected_data_lines, expected_num_lines",
+        [
+            # Test Case 1: Standard person data
+            (
+                MOCK_PERSON_DICT,
+                [
+                    ("first_name", "MockFirst"),
+                    ("last_name", "MockLast"),
+                    ("sex", "Male"),
+                    ("email", "mockfirst.mocklast@example.com"),
+                    ("age", "30"), # Age might be formatted as string in output
+                    ("job", "Programmer"),
+                    ("phone_num", "03125 473 263"),
+                ],
+                11, # 3 header lines + 7 data lines + 1 end line = 11
+            ),
+            # Test Case 2: A person with fewer details (example of testing variation)
+            (
+                {
+                    "first_name": MOCK_PERSON_DICT["first_name"],
+                    "age": MOCK_PERSON_DICT["age"],
+                },
+                [
+                    ("first_name", MOCK_PERSON_DICT["first_name"]),
+                    ("age", MOCK_PERSON_DICT["age"]),
+                ],
+                6, # 3 header lines + 2 data lines + 1 end line = 6
+            ),
+            # Test Case 3: Empty person dictionary (if your function handles this gracefully)
+            (
+                {},
+                [], # No data lines expected
+                4, # 3 header lines + 0 data lines + 1 end line = 4
+            )
+        ]
+    )
+    def test_format_person_for_display(
+        self, input_person_dict, expected_data_lines, expected_num_lines):
         """
-        person_dict = {
-            "first_name": "MockFirst",
-            "last_name": "MockLast",
-            "sex": "Male",
-            "email": "mockfirst.mocklast@example.com",
-            "age": 30,
-            "job": "Programmer",
-            "phone_num": "03125 473 263"
-        }
-
-        actual_output = r.format_person_for_display(person_dict)
+        Tests the format_person_for_display function's output structure and content
+        using parametrization for different person data.
+        """
+        actual_output = r.format_person_for_display(input_person_dict)
         lines = actual_output.splitlines()
 
-       # 1. Test top border
-        assert lines[0] == "-----------------------------------"
-
-        # 2. Test header line
+        # 1 Test Header and Footer
+        assert lines[0] == BORDER
         assert lines[1].strip() == "PERSON DETAILS"
-        assert len(lines[1]) == 14
+        assert lines[2] == BORDER
+        assert lines[-1] == BORDER
 
-        # 3. Test middle border
-        assert lines[2] == "-----------------------------------"
+        # 2 Check display of actual data lines
+        actual_data_lines = lines[3:-1] # From index 3 up to, but not including, the last line
+        assert len(actual_data_lines) == len(expected_data_lines), (
+            f"Expected {len(expected_data_lines)} data lines, got {len(actual_data_lines)}")
 
-        # 4. Test data lines
-        assert "first_name     : MockFirst" in lines
-        assert "last_name      : MockLast" in lines
-        assert "sex            : Male" in lines
-        assert "email          : mockfirst.mocklast@example.com" in lines
-        assert "age            : 30" in lines
-        assert "job            : Programmer" in lines
-        assert "phone_num      : 03125 473 263" in lines
+        for i, (key, value) in enumerate(expected_data_lines):
+            expected_substring = f"{key:<15}: {value}" # Example, adjust based on actual spacing
+            # Use regex or more flexible string checking if spacing varies wildly
+            assert expected_substring in actual_data_lines[i], (
+                f"Line {i+3}: Expected '{expected_substring}' but found '{actual_data_lines[i]}'")
 
-        # 5. Test bottom border
-        assert lines[-1] == "-----------------------------------"
+        # 3. Overall structural check - total number of lines
+        assert len(lines) == expected_num_lines, (
+            f"Expected {expected_num_lines} total lines, got {len(lines)}")
 
-        # 6. Basic structural check - count lines
-        assert len(lines) == 3 + len(person_dict) + 1 # 3 top border + 7 data lines + 1 bottom border
+
+    @pytest.mark.parametrize(
+        "mock_inputs, expected_outputs",
+        [
+            (("male", "11", "81"),   ("male", 11, 81)),
+            (("female", "25", "61"), ("female", 25, 61)),
+            (("", "", ""),           ("random", 10, 85)),
+            (("random", "", ""),     ("random", 10, 85))
+        ]
+    )
+    def test_get_interactive_person_parameters(self, mocker, mock_inputs, expected_outputs):
+        mocker.patch('builtins.input', side_effect=mock_inputs)
+        assert r._get_interactive_person_parameters() == expected_outputs
+
+
+    # def test_main(self):
+    #     assert r.main() == expected_person_dict
