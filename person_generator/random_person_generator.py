@@ -13,6 +13,7 @@ GEN_FEMALE_PATH = _DATA_DIR / "dist.female.first"
 SURNAME_PATH = _DATA_DIR / "dist.all.last"
 JOBS_PATH = _DATA_DIR / "list.occupations"
 
+
 def select_sex(gender_choice=None):
     """
     Randomly selects and returns either "Male" or "Female"
@@ -106,8 +107,8 @@ def generate_person_dict(gender_choice, age_min, age_max):
 
 def format_person_for_display(person_data):
     """Formatted standard print for person data"""
-    formatted_output = "-----------------------------------\n"
-    formatted_output += "PERSON DETAILS\n"
+    formatted_output  = "-----------------------------------\n"
+    formatted_output += "         PERSON DETAILS\n"
     formatted_output += "-----------------------------------\n"
     for key, value in person_data.items():
         formatted_output += f"{key:<15}: {value}\n"
@@ -190,5 +191,3 @@ if __name__ == '__main__':
 
     print("\nGenerated Person:")
     print(format_person_for_display(generated_person_data))
-
-
