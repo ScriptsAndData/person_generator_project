@@ -36,6 +36,22 @@ def select_random_name_from_file(file_path):
     return choice(all_names).capitalize()
 
 def generate_name(name_type, sex=None):
+    """Generates a random first or last name based on the specified type and gender.
+
+    Args:
+        name_type (str): The type of name to generate. Must be "first" or "last".
+        sex (str, optional): The gender for first names ("Male" or "Female").
+                             Required if `name_type` is "first". Defaults to None,
+                             which implies a male first name if `name_type` is "first"
+                             (due to the `GEN_FEMALE_PATH if sex == "Female" else 
+                             GEN_MALE_PATH` logic).
+
+    Returns:
+        str: A randomly selected name, capitalized.
+
+    Raises:
+        ValueError: If `name_type` is not "first" or "last".
+    """
     if name_type == "first":
         file_path = GEN_FEMALE_PATH if sex == "Female" else GEN_MALE_PATH
     elif name_type == "last":
