@@ -10,7 +10,7 @@ import textwrap
 from unittest.mock import mock_open
 
 import pytest
-from pytest_mock import MockerFixture 
+from pytest_mock import MockerFixture
 
 from person_generator import random_person_generator as r
 
@@ -29,6 +29,13 @@ MOCK_PERSON_DICT = {
                     "phone_num": "03125 473 263",
                 }
 
+MOCK_JOB_FILE_DATA = textwrap.dedent("""\
+            MOCKDOCTOR
+            MOCKNURSE
+            MOCKSURGEON
+        """)
+
+MOCK_INTERACTIVE_PARAMS = ("Male", 20, 70)
 
 class TestRandomPerson: # No inheritance from unittest.TestCase
     """
@@ -43,50 +50,76 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         Tests that select_random_name_from_file correctly reads, parses,
         and selects a name from a mocked file.
         """
-        fake_file_data = textwrap.dedent("""\
+        mock_name_file_data = textwrap.dedent("""\
             MOCKJAMES     3.318  3.318       1
             MOCKJOHN      3.271  6.589       2
             MOCKROBERT    3.143  9.732       3
         """)
 
         # Using mocker.patch instead of unittest.mock.patch directly
-        mock_file = mocker.patch("builtins.open", mock_open(read_data=fake_file_data))
+        mock_open_file = mocker.patch("builtins.open", mock_open(read_data=mock_name_file_data))
         mock_choice = mocker.patch(f"{RPG}.choice", return_value="mockjohn")
 
         assert r.select_random_name_from_file("dummy_path.txt") == "Mockjohn"
 
-        mock_file.assert_called_once_with("dummy_path.txt", "r", encoding='utf-8')
+        mock_open_file.assert_called_once_with("dummy_path.txt", "r", encoding='utf-8')
         mock_choice.assert_called_once_with(["MOCKJAMES", "MOCKJOHN", "MOCKROBERT"])
 
-    def test_generate_first_name_male(self, mocker: MockerFixture):
-        """
-        Tests that generate_first_name returns a male name 
-        by mocking the underlying name selection.
-        """
-        mock_core = mocker.patch(f"{RPG}.select_random_name_from_file", return_value="MockMaleName")
 
-        assert r.generate_first_name("Male") == "MockMaleName"
-        mock_core.assert_called_once_with(r.GEN_MALE_PATH)
+    @pytest.mark.parametrize(
+        "gender_input, name_type_input, mock_return_value, expected_file_path, expected_output",
+        [
+            (
+                "Male",            # Male gender_input
+                "first",           # first name_type_input
+                "MockMaleName",    # return_value for the mocked select_random_name_from_file
+                r.GEN_MALE_PATH,   # expected argument for select_random_name_from_file
+                "MockMaleName"     # expected output of generate_name
+            ),
+            (
+                "Female",          # Female
+                "first",           # first name
+                "MockFemaleName",
+                r.GEN_FEMALE_PATH,
+                "MockFemaleName"
+            ),
+            (
+                "",                # non-specified gender
+                "last",            # last name
+                "MockSurname",
+                r.SURNAME_PATH,
+                "MockSurname"
+            )
+        ]
+    )
+    def test_generate_name(
+        self,
+        mocker: MockerFixture,
+        name_type_input: str,
+        gender_input: str,
+        mock_return_value: str,
+        expected_file_path,
+        expected_output: str
+    ):
+        """
+        Tests that generate_name returns the correct name based on gender,
+        by mocking the underlying name selection and verifying file path.
+        """
+        # Mock the direct dependency: select_random_name_from_file
+        mock_core = mocker.patch(
+            f"{RPG}.select_random_name_from_file",
+            return_value=mock_return_value
+        )
 
-    def test_generate_first_name_female(self, mocker: MockerFixture):
-        """
-        Tests that generate_first_name returns a female name 
-        by mocking the underlying name selection.
-        """
-        mock_core = mocker.patch(f"{RPG}.select_random_name_from_file",
-                                 return_value="MockFemaleName")
+        # Call the function being tested
+        actual_output = r.generate_name(name_type_input, gender_input)
 
-        assert r.generate_first_name("Female") == "MockFemaleName"
-        mock_core.assert_called_once_with(r.GEN_FEMALE_PATH)
+        # Assert the function returns the expected output
+        assert actual_output == expected_output
 
-    def test_generate_last_name_wrapper(self, mocker: MockerFixture):
-        """
-        Tests that generate_last_name correctly calls the underlying
-        name selection with the surname path.
-        """
-        mock_core = mocker.patch(f"{RPG}.select_random_name_from_file", return_value="Mockname")
-        assert r.generate_last_name() == "Mockname"
-        mock_core.assert_called_once_with(r.SURNAME_PATH)
+        # Assert the mock was called correctly with the expected file path
+        mock_core.assert_called_once_with(expected_file_path)
+
 
     def test_generate_email(self):
         """
@@ -162,17 +195,16 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         assert r.generate_occupation(80) == "Retired"
         mock_core.assert_called_once_with(r.JOBS_PATH)
 
-    def test_generate_person_details_dict_full_mock(self, mocker: MockerFixture):
+    def test_generate_person_details_dict(self, mocker: MockerFixture):
         """
         Tests generate_random_person_details_dict by mocking all its dependencies
         and asserting the final dictionary content.
         """
         # Patching with mocker.patch (no decorators needed)
         mock_select_sex = mocker.patch(f"{RPG}.select_sex", return_value="Male")
-        mock_generate_first_name = mocker.patch(
-            f"{RPG}.generate_first_name", return_value="MockFirst")
-        mock_generate_last_name = mocker.patch(
-            f"{RPG}.generate_last_name", return_value="MockLast")
+        mock_generate_name = mocker.patch(
+            f"{RPG}.generate_name",
+            side_effect=["MockFirst", "MockLast"])
         mock_generate_email = mocker.patch(
             f"{RPG}.generate_email", return_value="mockfirst.mocklast@example.com")
         mock_generate_age = mocker.patch(f"{RPG}.generate_age", return_value=30)
@@ -187,8 +219,11 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
 
         # Assert calls (no change needed here for assert_called_once_with)
         mock_select_sex.assert_called_once()
-        mock_generate_first_name.assert_called_once_with("Male")
-        mock_generate_last_name.assert_called_once()
+
+        mock_generate_name.assert_has_calls(
+            [mocker.call("first", "Male"), mocker.call("last")] ) # type: ignore
+        assert mock_generate_name.call_count == 2
+
         mock_generate_email.assert_called_once_with("MockFirst", "MockLast")
         mock_generate_age.assert_called_once()
         mock_generate_occupation.assert_called_once_with(30)
