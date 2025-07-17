@@ -47,3 +47,8 @@ testpaths = ["pytests", "unittests"] # Tell pytest where to find *all* your test
 [tool.setuptools.package-data]
 "person_generator.data" = ["*.first", "*.last"]
 
+[tool.pylint."MASTER"]
+load-plugins = "pylint_pytest"
+
+[tool.pylint."DESIGN PROPERTIES"]
+max-args = 20 # Adjust this number as needed based on your highest argument count
