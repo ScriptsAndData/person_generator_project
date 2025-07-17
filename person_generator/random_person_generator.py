@@ -6,20 +6,23 @@ import re
 from random import choice, randint
 import argparse
 from importlib.resources import files as resource_files
+from typing import Literal, Optional, List, Dict, Any, Tuple
+from pathlib import Path
 
-_DATA_DIR = resource_files('person_generator.data')
-GEN_MALE_PATH = _DATA_DIR / "dist.male.first"
-GEN_FEMALE_PATH = _DATA_DIR / "dist.female.first"
-SURNAME_PATH = _DATA_DIR / "dist.all.last"
-JOBS_PATH = _DATA_DIR / "list.occupations"
-DEFAULT_MIN_AGE = 10
-DEFAULT_MAX_AGE = 85
-RETIREMENT_AGE = 67
-BECOME_ADULT_AT_AGE = 18
-EMAIL_PROVIDERS = ["aol", "gmail", "outlook", "yahoo", "icloud", "yandex"]
+_DATA_DIR: Path = resource_files('person_generator.data')
+GEN_MALE_PATH: Path = _DATA_DIR / "dist.male.first"
+GEN_FEMALE_PATH: Path = _DATA_DIR / "dist.female.first"
+SURNAME_PATH: Path = _DATA_DIR / "dist.all.last"
+JOBS_PATH: Path = _DATA_DIR / "list.occupations"
+DEFAULT_MIN_AGE: int = 10
+DEFAULT_MAX_AGE: int = 85
+RETIREMENT_AGE: int = 67
+BECOME_ADULT_AT_AGE: int = 18
+EMAIL_PROVIDERS: List[str] = ["aol", "gmail", "outlook", "yahoo", "icloud", "yandex"]
 
 
-def select_sex(gender_choice=None):
+def select_sex(gender_choice: Optional[Literal["male", "female"]] 
+                            = None) -> Literal["Male", "Female"]:
     """
     Randomly selects and returns either "Male" or "Female"
     """
@@ -29,7 +32,7 @@ def select_sex(gender_choice=None):
         return "Female"
     return choice(["Male","Female"])
 
-def select_random_name_from_file(file_path):
+def select_random_name_from_file(file_path: Path) -> str:
     """
     Reads the file containing names, parses it, selects and returns a random name.
     """
@@ -40,7 +43,8 @@ def select_random_name_from_file(file_path):
             all_names.append(thisname)
     return choice(all_names).capitalize()
 
-def generate_name(name_type, sex=None):
+def generate_name(name_type: Literal["first", "last"], 
+                  sex: Optional[Literal["Male", "Female"]] = None) -> str:
     """Generates a random first or last name based on the specified type and gender.
 
     Args:
@@ -65,22 +69,23 @@ def generate_name(name_type, sex=None):
         raise ValueError("Invalid name_type. Must be 'first' or 'last'.")
     return select_random_name_from_file(file_path)
 
-def generate_email(first_name, last_name):
+def generate_email(first_name: str, last_name: str) -> str:
     """
     Returns an email address with a randomly selected surname from the surname file.
     """
     service_provider = choice(EMAIL_PROVIDERS)
     return f"{first_name.lower()}.{last_name.lower()}@{service_provider}.com"
 
-def generate_age(min_age=DEFAULT_MIN_AGE, max_age=DEFAULT_MAX_AGE):
+def generate_age(min_age: int = DEFAULT_MIN_AGE, 
+                 max_age: int = DEFAULT_MAX_AGE) -> int:
     """Returns randomly generated age"""
     return randint(min_age, max_age)
 
-def generate_phone_num():
+def generate_phone_num() -> str:
     """Returns randomly generated phone number"""
     return f"0{randint(1000, 9999)} {randint(100, 999)} {randint(0, 999):03d}"
 
-def select_random_job_from_file(file_path):
+def select_random_job_from_file(file_path: Path) -> str:
     """
     Reads the file containing jobs, parses it, selects and returns a random name.
     """
@@ -91,7 +96,7 @@ def select_random_job_from_file(file_path):
             all_jobs.append(thisjob)
     return choice(all_jobs).title()
 
-def generate_occupation(age):
+def generate_occupation(age: int) -> str:
     """Returns randomly generated job, modified by age"""
     if age > RETIREMENT_AGE:
         job = "Retired"
@@ -101,7 +106,10 @@ def generate_occupation(age):
         job = "Child"
     return job
 
-def generate_person_dict(gender_choice, age_min, age_max):
+def generate_person_dict(
+        gender_choice: Optional[str], 
+        age_min: int, 
+        age_max: int) -> Dict[str, Any]:
     """Returns a dictionary object consisting of the all the person attributes"""
     sex = select_sex(gender_choice)
     first_name = generate_name("first", sex)
@@ -122,7 +130,7 @@ def generate_person_dict(gender_choice, age_min, age_max):
     }
     return pdict
 
-def format_person_for_display(person_data):
+def format_person_for_display(person_data: Dict[str, Any]) -> str:
     """Formatted standard print for person data"""
     formatted_output  = "-----------------------------------\n"
     formatted_output += "         PERSON DETAILS\n"
@@ -133,7 +141,7 @@ def format_person_for_display(person_data):
     return formatted_output
 
 
-def _get_interactive_person_parameters():
+def _get_interactive_person_parameters() -> Tuple[Literal["male", "female", "random"], int, int]:
     """
     Prompts the user for gender and age range and returns the validated inputs.
     """
@@ -170,7 +178,7 @@ def _get_interactive_person_parameters():
     return gender_to_generate, min_age_to_generate, max_age_to_generate
 
 
-def main():
+def main() -> Dict[str, Any]:
     """
     Parses command line options, controls either batch or interactive mode, and 
     returns the generated person data
