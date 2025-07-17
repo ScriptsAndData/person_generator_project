@@ -312,5 +312,83 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         assert r._get_interactive_person_parameters() == expected_outputs
 
 
-    # def test_main(self):
-    #     assert r.main() == expected_person_dict
+    @pytest.mark.parametrize(
+        "argv_input, "
+        "expected_get_interactive_call, " # tuple (call_args) or None
+        "mock_interactive_return_value, " # what _get_interactive_person_parameters() returns
+        "expected_generate_person_dict_call_args",
+    [
+            # Test Case 1: Batch Mode (no --interactive flag)
+            (
+                ['random_person_generator.py'], # Simulate: script name only
+                None,                           # _get_interactive_person_parameters should NOT be called
+                None,                           # Not applicable
+                {"gender_choice": None, "age_min": 10, "age_max": 85} # Default parameters for generate_person_dict
+            ),
+            # Test Case 2: Interactive Mode
+            (
+                ['random_person_generator.py', '--interactive'], # Simulate: script name + --interactive
+                (),                                             # _get_interactive_person_parameters() IS called (no args)
+                MOCK_INTERACTIVE_PARAMS,                        # It returns these values
+                {"gender_choice": "Male", "age_min": 20, "age_max": 70} # Params from interactive input
+            ),
+            # Test Case 3: Interactive Mode (short flag)
+            (
+                ['random_person_generator.py', '-i'], # Simulate: script name + -i
+                (),
+                MOCK_INTERACTIVE_PARAMS,
+                {"gender_choice": "Male", "age_min": 20, "age_max": 70}
+            ),
+    ])
+    def test_main_functionality(
+        self,
+        mocker: MockerFixture,
+        argv_input,
+        expected_get_interactive_call,
+        mock_interactive_return_value,
+        expected_generate_person_dict_call_args
+    ):
+        """
+        Tests the core logic of the main function: argument parsing,
+        interactive mode activation, and correct parameter passing to generate_person_dict.
+        """
+        # 1. Mock sys.argv to control command-line arguments for argparse
+        mocker.patch('sys.argv', argv_input)
+
+        # 2. Mock sys.exit to prevent SystemExit from argparse errors
+        mock_sys_exit = mocker.patch('sys.exit')
+
+        # 3. Mock _get_interactive_person_parameters if it's expected to be called
+        #    We make sure to provide a return_value if the mock is going to be called.
+        mock_get_interactive = mocker.patch(
+            f"{RPG}._get_interactive_person_parameters",
+            return_value=mock_interactive_return_value
+        )
+
+        # 4. Mock generate_person_dict, as main() depends on its return value
+        mock_generate_person_dict = mocker.patch(
+            f"{RPG}.generate_person_dict",
+            return_value=MOCK_PERSON_DICT # main() returns this, so we need a known value
+        )
+
+        # --- Call the main function ---
+        actual_returned_person = r.main()
+
+        # --- Assertions ---
+
+        # Assert no premature exit
+        mock_sys_exit.assert_not_called()
+
+        # Assert _get_interactive_person_parameters was called conditionally
+        if expected_get_interactive_call is None:
+            mock_get_interactive.assert_not_called()
+        else:
+            mock_get_interactive.assert_called_once_with(*expected_get_interactive_call)
+
+        # Assert generate_person_dict was called with the correct parameters
+        mock_generate_person_dict.assert_called_once_with(
+            **expected_generate_person_dict_call_args
+        )
+
+        # Assert that main() returned the dictionary provided by the mock
+        assert actual_returned_person == MOCK_PERSON_DICT
