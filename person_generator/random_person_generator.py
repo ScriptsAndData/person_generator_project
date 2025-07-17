@@ -12,6 +12,11 @@ GEN_MALE_PATH = _DATA_DIR / "dist.male.first"
 GEN_FEMALE_PATH = _DATA_DIR / "dist.female.first"
 SURNAME_PATH = _DATA_DIR / "dist.all.last"
 JOBS_PATH = _DATA_DIR / "list.occupations"
+DEFAULT_MIN_AGE = 10
+DEFAULT_MAX_AGE = 85
+RETIREMENT_AGE = 67
+BECOME_ADULT_AT_AGE = 18
+EMAIL_PROVIDERS = ["aol", "gmail", "outlook", "yahoo", "icloud", "yandex"]
 
 
 def select_sex(gender_choice=None):
@@ -64,10 +69,10 @@ def generate_email(first_name, last_name):
     """
     Returns an email address with a randomly selected surname from the surname file.
     """
-    service_provider = choice(["aol", "gmail", "outlook", "yahoo", "icloud", "yandex"])
+    service_provider = choice(EMAIL_PROVIDERS)
     return f"{first_name.lower()}.{last_name.lower()}@{service_provider}.com"
 
-def generate_age(min_age=10, max_age=85):
+def generate_age(min_age=DEFAULT_MIN_AGE, max_age=DEFAULT_MAX_AGE):
     """Returns randomly generated age"""
     return randint(min_age, max_age)
 
@@ -88,9 +93,9 @@ def select_random_job_from_file(file_path):
 
 def generate_occupation(age):
     """Returns randomly generated job, modified by age"""
-    if age > 67:
+    if age > RETIREMENT_AGE:
         job = "Retired"
-    elif age >= 18:
+    elif age >= BECOME_ADULT_AT_AGE:
         job = select_random_job_from_file(JOBS_PATH)
     else:
         job = "Child"
@@ -135,8 +140,8 @@ def _get_interactive_person_parameters():
     print("--- Interactive Person Generation ---")
 
     gender_to_generate = "random" # Default for interactive if user presses enter
-    min_age_to_generate = 10     # Default for interactive if user presses enter
-    max_age_to_generate = 85     # Default for interactive if user presses enter
+    min_age_to_generate = DEFAULT_MIN_AGE # Default for interactive if user presses enter
+    max_age_to_generate = DEFAULT_MAX_AGE # Default for interactive if user presses enter
 
     # Get gender input
     while True:
@@ -182,8 +187,8 @@ def main():
     args = parser.parse_args()
 
     gender_final = None # Default for generate_person_dict (random)
-    min_age_final = 10
-    max_age_final = 85
+    min_age_final = DEFAULT_MIN_AGE
+    max_age_final = DEFAULT_MAX_AGE
 
     if args.interactive:
         gender_final, min_age_final, max_age_final = _get_interactive_person_parameters()
