@@ -4,7 +4,7 @@ in a python dictionary
 """
 import re
 from random import choice, randint
-import argparse # Import argparse
+import argparse
 from importlib.resources import files as resource_files
 
 _DATA_DIR = resource_files('person_generator.data')
