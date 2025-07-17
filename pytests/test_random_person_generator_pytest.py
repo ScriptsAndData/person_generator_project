@@ -177,6 +177,21 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
     def test_select_random_job_from_file_parametrized(
         self, mocker, file_data, expected_parsed_list, mock_choice_return, expected_output
     ):
+        """Tests select_random_job_from_file with various file contents.
+
+        This parameterized test ensures that the `select_random_job_from_file`
+        function correctly reads, parses, and selects a random job from different
+        simulated file inputs, including single-job and empty file scenarios.
+        It also verifies that `builtins.open` and `random.choice` are called
+        with the expected arguments.
+
+        Args:
+            mocker (MockerFixture): The pytest-mock fixture for patching.
+            file_data (str): The mock content of the job file.
+            expected_parsed_list (list): The list of jobs expected to be parsed from `file_data`.
+            mock_choice_return (str): The value `random.choice` should return.
+            expected_output (str): The expected final output from the function under test.
+        """
         mock_file = mocker.patch("builtins.open", mock_open(read_data=file_data))
         mock_choice = mocker.patch(f"{RPG}.choice", return_value=mock_choice_return)
 
@@ -308,6 +323,8 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         ]
     )
     def test_get_interactive_person_parameters(self, mocker, mock_inputs, expected_outputs):
+        """Test function _get_interactive_person_parameters() with sets
+        of mock interactive inputs"""
         mocker.patch('builtins.input', side_effect=mock_inputs)
         assert r._get_interactive_person_parameters() == expected_outputs
 
@@ -321,16 +338,22 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
             # Test Case 1: Batch Mode (no --interactive flag)
             (
                 ['random_person_generator.py'], # Simulate: script name only
-                None,                           # _get_interactive_person_parameters should NOT be called
+                None,
+                # _get_interactive_person_parameters should NOT be called
                 None,                           # Not applicable
-                {"gender_choice": None, "age_min": 10, "age_max": 85} # Default parameters for generate_person_dict
+                {"gender_choice": None, "age_min": 10, "age_max": 85} # Default
+                                          # parameters for generate_person_dict
             ),
             # Test Case 2: Interactive Mode
             (
-                ['random_person_generator.py', '--interactive'], # Simulate: script name + --interactive
-                (),                                             # _get_interactive_person_parameters() IS called (no args)
-                MOCK_INTERACTIVE_PARAMS,                        # It returns these values
-                {"gender_choice": "Male", "age_min": 20, "age_max": 70} # Params from interactive input
+                ['random_person_generator.py', '--interactive'],
+                # Simulate: script name + --interactive
+                (),
+                # _get_interactive_person_parameters() IS called (no args)
+                MOCK_INTERACTIVE_PARAMS,
+                # It returns these values
+                {"gender_choice": "Male", "age_min": 20, "age_max": 70}
+                # Params from interactive input
             ),
             # Test Case 3: Interactive Mode (short flag)
             (
