@@ -165,25 +165,25 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
             f"Phone number '{phone_num}' does not match expected format '{phone_pattern}'"
         assert isinstance(phone_num, str)
 
-    def test_select_random_job_from_file(self, mocker: MockerFixture):
-        """
-        Tests that select_random_job_from_file correctly reads, parses,
-        and selects a name from a mocked file.
-        """
-        fake_file_data = textwrap.dedent("""\
-            MOCKDOCTOR
-            MOCKNURSE
-            MOCKSURGEON
-        """)
+    @pytest.mark.parametrize(
+        "file_data, expected_parsed_list, mock_choice_return, expected_output",
+        [
+            (MOCK_JOB_FILE_DATA,
+             ["MOCKDOCTOR", "MOCKNURSE", "MOCKSURGEON"], "mockdoctor", "Mockdoctor"),
+            (textwrap.dedent("SINGLEJOB"), ["SINGLEJOB"], "singlejob", "Singlejob"),
+            ("", [], "", "") # Test empty file scenario
+        ]
+    )
+    def test_select_random_job_from_file_parametrized(
+        self, mocker, file_data, expected_parsed_list, mock_choice_return, expected_output
+    ):
+        mock_file = mocker.patch("builtins.open", mock_open(read_data=file_data))
+        mock_choice = mocker.patch(f"{RPG}.choice", return_value=mock_choice_return)
 
-        # Using mocker.patch instead of unittest.mock.patch directly
-        mock_file = mocker.patch("builtins.open", mock_open(read_data=fake_file_data))
-        mock_choice = mocker.patch(f"{RPG}.choice", return_value="mockdoctor")
-
-        assert r.select_random_job_from_file("dummy_path.txt") == "Mockdoctor"
-
+        assert r.select_random_job_from_file("dummy_path.txt") == expected_output
         mock_file.assert_called_once_with("dummy_path.txt", "r", encoding='utf-8')
-        mock_choice.assert_called_once_with(["MOCKDOCTOR", "MOCKNURSE", "MOCKSURGEON"])
+        mock_choice.assert_called_once_with(expected_parsed_list)
+
 
     def test_generate_occupation(self, mocker: MockerFixture):
         """
