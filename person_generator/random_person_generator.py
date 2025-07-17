@@ -35,18 +35,14 @@ def select_random_name_from_file(file_path):
             all_names.append(thisname)
     return choice(all_names).capitalize()
 
-def generate_first_name(sex):
-    """
-    Selects and return a gender matching first name
-    """
-    file_path = GEN_MALE_PATH if sex == "Male" else GEN_FEMALE_PATH
+def generate_name(name_type, sex=None):
+    if name_type == "first":
+        file_path = GEN_FEMALE_PATH if sex == "Female" else GEN_MALE_PATH
+    elif name_type == "last":
+        file_path = SURNAME_PATH
+    else:
+        raise ValueError("Invalid name_type. Must be 'first' or 'last'.")
     return select_random_name_from_file(file_path)
-
-def generate_last_name():
-    """
-    Returns a randomly selected surname from the surname file.
-    """
-    return select_random_name_from_file(SURNAME_PATH)
 
 def generate_email(first_name, last_name):
     """
@@ -87,8 +83,8 @@ def generate_occupation(age):
 def generate_person_dict(gender_choice, age_min, age_max):
     """Returns a dictionary object consisting of the all the person attributes"""
     sex = select_sex(gender_choice)
-    first_name = generate_first_name(sex)
-    last_name = generate_last_name()
+    first_name = generate_name("first", sex)
+    last_name = generate_name("last")
     email = generate_email(first_name, last_name)
     age = generate_age(age_min, age_max)
     job = generate_occupation(age)
