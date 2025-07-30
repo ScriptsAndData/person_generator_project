@@ -13,6 +13,7 @@ import argparse
 import sys
 from unittest.mock import mock_open, patch
 import pytest
+from types import SimpleNamespace
 from pytest_mock import MockerFixture
 
 from person_generator.random_person_generator import EMAIL_PROVIDERS
@@ -538,3 +539,67 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         # Check that an error message was printed to stderr
         outerr = capsys.readouterr()
         assert "invalid choice: 'invalid_gender'" in outerr.err
+
+
+    def test_validate_args_valid_input(self) -> None:
+        """
+        Tests that _validate_args does not raise an error for valid arguments.
+        """
+        # Arrange: Create a Namespace object with valid values
+        # SimpleNamespace is great for quickly creating objects with attributes
+        args = SimpleNamespace(count=1, min_age=18, max_age=60, gender=None)
+
+        # Act & Assert: Call the function. If no exception is raised, the test passes.
+        try:
+            r._validate_args(args)
+        except SystemExit:
+            pytest.fail("_validate_args raised SystemExit for valid input.")
+
+
+    @pytest.mark.parametrize(
+        "count, min_age, max_age, expected_error_message",
+        [
+            (0, 10, 85, "Count must be a positive integer"),
+            (-200, 10, 85, "Count must be a positive integer"),
+            (1, -10, 85, "Minimum age cannot be less than zero"),
+            (1, 85, 10, "Minimum age cannot be greater than maximum age"),
+        ]
+    )
+    def test_validate_args_invalid_age_raises_error(
+        self, count, min_age, max_age, expected_error_message, capsys):
+        """
+        Tests that _validate_args raises SystemExit when count is invalid (<= 0).
+        """
+        # Arrange
+        args = SimpleNamespace(
+            count=count, min_age=min_age, max_age=max_age, gender=None)
+
+        # Act & Assert
+        with pytest.raises(SystemExit) as excinfo:
+            r._validate_args(args)
+
+        # Assert the exit code and error message
+        assert excinfo.value.code == 2 # argparse.error typically exits with code 2
+        outerr = capsys.readouterr()
+        assert expected_error_message in outerr.err
+
+
+    def test_validate_args_multiple_errors_prioritization(self, capsys):
+        """
+        Tests how _validate_args handles multiple invalid conditions.
+        It should stop at the first encountered error.
+        """
+        # Arrange: Both count and age range are invalid
+        args = SimpleNamespace(count=0, min_age=50, max_age=40, gender=None)
+
+        # Act & Assert
+        with pytest.raises(SystemExit) as excinfo:
+            r._validate_args(args)
+
+        # Assert that only the first error message is present
+        assert excinfo.value.code == 2
+        outerr = capsys.readouterr()
+        assert "Count must be a positive integer." in outerr.err
+        assert ("Minimum age cannot be greater than maximum age." 
+                    not in outerr.err) # Ensure only first error is shown
+        

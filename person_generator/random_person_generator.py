@@ -274,6 +274,18 @@ def _parse_args() -> argparse.Namespace:
     )
     return parser.parse_args()
 
+
+def _validate_args(args: argparse.Namespace) -> None:
+    """Validates parsed arguments."""
+    if args.count <= 0:
+        # Use parser.error for graceful exit with help message
+        argparse.ArgumentParser().error("Count must be a positive integer.")
+    if args.min_age > args.max_age:
+        argparse.ArgumentParser().error("Minimum age cannot be greater than maximum age.")
+    if args.min_age < 0:
+        argparse.ArgumentParser().error("Minimum age cannot be less than zero.")
+
+
 # Parses command line options, controls either batch or interactive mode, and
 # returns the generated person data.
 
