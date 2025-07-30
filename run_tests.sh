@@ -1,4 +1,6 @@
 #!/bin/bash
 set -x
-pytest -vvv pytests/
-# python -m unittest discover unittests -v
+# pytest -vvv             pytests/
+# pytest -vvv -s       -l pytests/
+  pytest -vvv -s --pdb -l pytests/
+

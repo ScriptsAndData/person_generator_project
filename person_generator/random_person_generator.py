@@ -6,7 +6,7 @@ import re
 from random import choice, randint
 import argparse
 from importlib.resources import files as resource_files
-from typing import Literal, Optional, List, Dict, Any, Tuple
+from typing import Literal, Optional, List, Dict, Any, Tuple, Callable
 from pathlib import Path
 
 _DATA_DIR: Path = resource_files('person_generator.data')
@@ -17,12 +17,14 @@ JOBS_PATH: Path = _DATA_DIR / "list.occupations"
 DEFAULT_MIN_AGE: int = 10
 DEFAULT_MAX_AGE: int = 85
 RETIREMENT_AGE: int = 67
-BECOME_ADULT_AT_AGE: int = 18
-EMAIL_PROVIDERS: List[str] = ["aol", "gmail", "outlook", "yahoo", "icloud", "yandex"]
+BECOME_ADULT_AGE: int = 18
+EMAIL_PROVIDERS: List[str] = ["aol", "gmail", "outlook", "yahoo", "icloud",
+                              "yandex", "protonmail", "fastmail", "hotmail"]
+BORDER: str = "-----------------------------------"
 
 
-def select_sex(gender_choice: Optional[Literal["male", "female"]] 
-                            = None) -> Literal["Male", "Female"]:
+def generate_sex(gender_choice: 
+        Optional[Literal["male", "female"]] = None) -> Literal["Male", "Female"]:
     """
     Randomly selects and returns either "Male" or "Female"
     """
@@ -32,42 +34,66 @@ def select_sex(gender_choice: Optional[Literal["male", "female"]]
         return "Female"
     return choice(["Male","Female"])
 
-def select_random_name_from_file(file_path: Path) -> str:
+
+def generate_age(min_age: int = DEFAULT_MIN_AGE,
+                 max_age: int = DEFAULT_MAX_AGE) -> int:
+    """Returns randomly generated age"""
+    return randint(min_age, max_age)
+
+
+def read_files_various_inputs(
+    file_path: Path,
+    regex_pattern: str,
+    transform_func: Callable[[str], str]
+) -> str:
     """
-    Reads the file containing names, parses it, selects and returns a random name.
+    Reads all lines from a file, extracts strings based on a regex pattern,
+    applies a transformation function, and returns a random selection.
+    Suitable for small-to-medium sized files where loading into memory is acceptable.
     """
-    all_names = []
+    if not file_path.exists():
+        raise FileNotFoundError(f"File not found: {file_path}")
+
+    all_items = []
     with open(file_path, 'r', encoding='utf-8') as input_data_io:
         for line in input_data_io:
-            thisname = ''.join(re.findall('[a-zA-Z]+', line))
-            all_names.append(thisname)
-    return choice(all_names).capitalize()
+            line = line.strip()
+            match = re.search(regex_pattern, line)
+            if match:
+                this_item = match.group(0)
+                all_items.append(transform_func(this_item))
 
-def generate_name(name_type: Literal["first", "last"], 
-                  sex: Optional[Literal["Male", "Female"]] = None) -> str:
-    """Generates a random first or last name based on the specified type and gender.
+    if not all_items:
+        raise ValueError(
+         f"No items were found from the file : {file_path} with pattern: {regex_pattern}")
 
-    Args:
-        name_type (str): The type of name to generate. Must be "first" or "last".
-        sex (str, optional): The gender for first names ("Male" or "Female").
-                             Required if `name_type` is "first". Defaults to None,
-                             which implies a male first name if `name_type` is "first"
-                             (due to the `GEN_FEMALE_PATH if sex == "Female" else 
-                             GEN_MALE_PATH` logic).
+    return choice(all_items)
 
-    Returns:
-        str: A randomly selected name, capitalized.
 
-    Raises:
-        ValueError: If `name_type` is not "first" or "last".
-    """
-    if name_type == "first":
-        file_path = GEN_FEMALE_PATH if sex == "Female" else GEN_MALE_PATH
-    elif name_type == "last":
-        file_path = SURNAME_PATH
+def generate_first_name(gender: str) -> str:
+    """Returns randomly generated first name based on gender"""
+    path = GEN_FEMALE_PATH if gender == "Female" else GEN_MALE_PATH
+    return read_files_various_inputs(
+        path, r'[a-zA-Z]+', str.capitalize)
+
+
+def generate_last_name() -> str:
+    """Returns randomly generated last name"""
+    return read_files_various_inputs(
+        SURNAME_PATH, r'[a-zA-Z]+', str.capitalize)
+
+
+def generate_occupation(age: int) -> str:
+    """Returns randomly generated job, modified by age"""
+    if age > RETIREMENT_AGE:
+        job = "Retired"
+    elif age >= BECOME_ADULT_AGE:
+        job = read_files_various_inputs(
+            JOBS_PATH, r'^[a-zA-Z\s-]+', str.title)
     else:
-        raise ValueError("Invalid name_type. Must be 'first' or 'last'.")
-    return select_random_name_from_file(file_path)
+        job = "Child"
+    return job
+
 
 def generate_email(first_name: str, last_name: str) -> str:
     """
@@ -76,44 +102,32 @@ def generate_email(first_name: str, last_name: str) -> str:
     service_provider = choice(EMAIL_PROVIDERS)
     return f"{first_name.lower()}.{last_name.lower()}@{service_provider}.com"
 
-def generate_age(min_age: int = DEFAULT_MIN_AGE, 
-                 max_age: int = DEFAULT_MAX_AGE) -> int:
-    """Returns randomly generated age"""
-    return randint(min_age, max_age)
 
 def generate_phone_num() -> str:
-    """Returns randomly generated phone number"""
-    return f"0{randint(1000, 9999)} {randint(100, 999)} {randint(0, 999):03d}"
-
-def select_random_job_from_file(file_path: Path) -> str:
     """
-    Reads the file containing jobs, parses it, selects and returns a random name.
+    Returns a randomly generated simple generic-looking phone number.
+    Format: (XXX) XXX-XXXX
     """
-    all_jobs = []
-    with open(file_path, 'r', encoding='utf-8') as input_data_io:
-        for line in input_data_io:
-            thisjob= ''.join(re.findall('[a-zA-Z ]+', line))
-            all_jobs.append(thisjob)
-    return choice(all_jobs).title()
+    # Generates a 3-digit "area code" (no leading 0 here)
+    area_code = randint(100, 999)
 
-def generate_occupation(age: int) -> str:
-    """Returns randomly generated job, modified by age"""
-    if age > RETIREMENT_AGE:
-        job = "Retired"
-    elif age >= BECOME_ADULT_AT_AGE:
-        job = select_random_job_from_file(JOBS_PATH)
-    else:
-        job = "Child"
-    return job
+    # Generates a 3-digit "prefix"
+    prefix = randint(100, 999)
+
+    # Generates a 4-digit "line number" (padded with leading zeros if less than 1000)
+    line_number = randint(0, 9999)
+
+    return f"({area_code}) {prefix}-{line_number:04d}"
+
 
 def generate_person_dict(
-        gender_choice: Optional[str], 
-        age_min: int, 
+        gender_choice: Optional[str],
+        age_min: int,
         age_max: int) -> Dict[str, Any]:
     """Returns a dictionary object consisting of the all the person attributes"""
-    sex = select_sex(gender_choice)
-    first_name = generate_name("first", sex)
-    last_name = generate_name("last")
+    sex = generate_sex(gender_choice)
+    first_name = generate_first_name(sex)
+    last_name = generate_last_name()
     email = generate_email(first_name, last_name)
     age = generate_age(age_min, age_max)
     job = generate_occupation(age)
@@ -130,14 +144,15 @@ def generate_person_dict(
     }
     return pdict
 
+
 def format_person_for_display(person_data: Dict[str, Any]) -> str:
     """Formatted standard print for person data"""
-    formatted_output  = "-----------------------------------\n"
+    formatted_output  = BORDER + "\n"
     formatted_output += "         PERSON DETAILS\n"
-    formatted_output += "-----------------------------------\n"
+    formatted_output += BORDER + "\n"
     for key, value in person_data.items():
         formatted_output += f"{key:<15}: {value}\n"
-    formatted_output += "-----------------------------------\n"
+    formatted_output += BORDER + "\n"
     return formatted_output
 
 
@@ -145,8 +160,6 @@ def _get_interactive_person_parameters() -> Tuple[Literal["male", "female", "ran
     """
     Prompts the user for gender and age range and returns the validated inputs.
     """
-    print("--- Interactive Person Generation ---")
-
     gender_to_generate = "random" # Default for interactive if user presses enter
     min_age_to_generate = DEFAULT_MIN_AGE # Default for interactive if user presses enter
     max_age_to_generate = DEFAULT_MAX_AGE # Default for interactive if user presses enter
@@ -163,11 +176,15 @@ def _get_interactive_person_parameters() -> Tuple[Literal["male", "female", "ran
     # Get age range input
     while True:
         try:
-            min_age_str = input(f"Enter minimum age (default {min_age_to_generate}): ").strip()
-            min_age_to_generate = int(min_age_str) if min_age_str else min_age_to_generate
+            min_age_str_input = input(
+                f"Enter minimum age (default {min_age_to_generate}): ").strip()
+            min_age_to_generate = int(
+                min_age_str_input) if min_age_str_input else min_age_to_generate
 
-            max_age_str = input(f"Enter maximum age (default {max_age_to_generate}): ").strip()
-            max_age_to_generate = int(max_age_str) if max_age_str else max_age_to_generate
+            max_age_str_input = input(
+                f"Enter maximum age (default {max_age_to_generate}): ").strip()
+            max_age_to_generate = int(
+                max_age_str_input) if max_age_str_input else max_age_to_generate
 
             if min_age_to_generate > max_age_to_generate:
                 print("Minimum age cannot be greater than maximum age. Please re-enter.")
@@ -175,6 +192,7 @@ def _get_interactive_person_parameters() -> Tuple[Literal["male", "female", "ran
             break # Exit age input loop if valid
         except ValueError:
             print("Invalid age entered. Please enter a number.")
+
     return gender_to_generate, min_age_to_generate, max_age_to_generate
 
 
@@ -207,12 +225,18 @@ def main() -> Dict[str, Any]:
         age_min=min_age_final,
         age_max=max_age_final
     )
+
     return person
 
 
+# Parses command line options, controls either batch or interactive mode, and
+# returns the generated person data.
+
+# Note: This function returns the generated data rather than printing it directly.
+# This design choice enhances testability and allows the main function to be
+# more easily imported and reused programmatically.
 if __name__ == '__main__':
-    # Call the main function and capture its return value
+
     generated_person_data = main()
 
-    print("\nGenerated Person:")
     print(format_person_for_display(generated_person_data))

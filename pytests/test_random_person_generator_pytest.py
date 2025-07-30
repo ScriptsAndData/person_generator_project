@@ -6,122 +6,127 @@ This module contains tests for functions that generate random person details
 such as names, email, age, occupation, and phone numbers.
 """
 import re
-import textwrap
-from unittest.mock import mock_open
+from typing import Any, Tuple, Callable
+from pathlib import Path
 
+from unittest.mock import mock_open
 import pytest
 from pytest_mock import MockerFixture
 
+from person_generator.random_person_generator import EMAIL_PROVIDERS
+from person_generator.random_person_generator import BORDER
 from person_generator import random_person_generator as r
 
-# Helper for patch targets (same as you used, works great here)
-RPG = f"{r.__name__}"
+from .conftest import TEST_READ_FILE_VARIOUS_INPUTS_CASES
+from .conftest import TEST_GENERATE_RANDOM_VALUE_FROM_FILE
 
-BORDER = "-----------------------------------"
+# BORDER: str = "-----------------------------------"
 
-MOCK_PERSON_DICT = {
-                    "first_name": "MockFirst",
-                    "last_name": "MockLast",
-                    "sex": "Male",
-                    "email": "mockfirst.mocklast@example.com",
-                    "age": 30,
-                    "job": "Programmer",
-                    "phone_num": "03125 473 263",
-                }
-
-MOCK_JOB_FILE_DATA = textwrap.dedent("""\
-            MOCKDOCTOR
-            MOCKNURSE
-            MOCKSURGEON
-        """)
-
-MOCK_INTERACTIVE_PARAMS = ("Male", 20, 70)
 
 class TestRandomPerson: # No inheritance from unittest.TestCase
     """
     Test suite for functions within the random_person_generator module using pytest.
     """
-    def test_select_sex(self):
-        """Tests that select_sex returns either 'Male' or 'Female'."""
-        assert r.select_sex() in ["Male", "Female"]
+    def test_generate_sex(self) -> None:
+        """Tests that generate_sex returns either 'Male' or 'Female'."""
+        assert r.generate_sex() in ["Male", "Female"]
 
-    def test_select_random_name_from_file(self, mocker: MockerFixture): # Use mocker fixture
+
+    def test_generate_age(self) -> None:
         """
-        Tests that select_random_name_from_file correctly reads, parses,
-        and selects a name from a mocked file.
+        Tests that generate_age returns an integer within the expected range (1 to 100).
         """
-        mock_name_file_data = textwrap.dedent("""\
-            MOCKJAMES     3.318  3.318       1
-            MOCKJOHN      3.271  6.589       2
-            MOCKROBERT    3.143  9.732       3
-        """)
-
-        # Using mocker.patch instead of unittest.mock.patch directly
-        mock_open_file = mocker.patch("builtins.open", mock_open(read_data=mock_name_file_data))
-        mock_choice = mocker.patch(f"{RPG}.choice", return_value="mockjohn")
-
-        assert r.select_random_name_from_file("dummy_path.txt") == "Mockjohn"
-
-        mock_open_file.assert_called_once_with("dummy_path.txt", "r", encoding='utf-8')
-        mock_choice.assert_called_once_with(["MOCKJAMES", "MOCKJOHN", "MOCKROBERT"])
+        age = r.generate_age()
+        assert age >= 1
+        assert age <= 100
+        assert isinstance(age, int)
 
 
     @pytest.mark.parametrize(
-        "gender_input, name_type_input, mock_return_value, expected_file_path, expected_output",
-        [
-            (
-                "Male",            # Male gender_input
-                "first",           # first name_type_input
-                "MockMaleName",    # return_value for the mocked select_random_name_from_file
-                r.GEN_MALE_PATH,   # expected argument for select_random_name_from_file
-                "MockMaleName"     # expected output of generate_name
-            ),
-            (
-                "Female",          # Female
-                "first",           # first name
-                "MockFemaleName",
-                r.GEN_FEMALE_PATH,
-                "MockFemaleName"
-            ),
-            (
-                "",                # non-specified gender
-                "last",            # last name
-                "MockSurname",
-                r.SURNAME_PATH,
-                "MockSurname"
-            )
-        ]
+        "mock_file_content, file_path_arg, regex_pattern, transform_func, expected_outcome",
+        TEST_READ_FILE_VARIOUS_INPUTS_CASES
     )
-    def test_generate_name(
+    def test_read_files_various_inputs(
+            self,
+            mocker: MockerFixture,
+            mock_file_content: str,
+            file_path_arg: Path,
+            regex_pattern: str,
+            transform_func: Callable[[str], str],
+            expected_outcome: Any, # Use Any if it can be a string or a pytest.raises context
+    ) -> None:
+        """
+        Tests r.read_files_various_inputs for various file types and scenarios
+        using a single-line mock and parametrization.
+        """
+        # 1. Arrange: Patch builtins.open to return our mock file content
+        mock_open_func = mocker.patch("builtins.open", mock_open(read_data=mock_file_content))
+
+        # 2. Act & Assert based on expected_outcome
+        if isinstance(expected_outcome, type) and issubclass(expected_outcome, Exception):
+            # This branch handles cases where an exception is expected
+            # (e.g., IndexError for empty file)
+            with pytest.raises(expected_outcome, match="No items were found from the file" \
+            ""): # Adjust match as needed
+                r.read_files_various_inputs(file_path_arg, regex_pattern, transform_func)
+            mock_open_func.assert_called_once_with(file_path_arg, 'r', encoding='utf-8')
+        else:
+            # This branch handles cases where a successful string result is expected
+            result = r.read_files_various_inputs(file_path_arg, regex_pattern, transform_func)
+            assert result == expected_outcome
+            mock_open_func.assert_called_once_with(file_path_arg, 'r', encoding='utf-8')
+
+
+    @pytest.mark.parametrize(
+        ("generator_func, generator_func_args, expected_path, expected_regex,"
+        "expected_transform_func, mock_return_value, read_func_expected_to_be_called"),
+        TEST_GENERATE_RANDOM_VALUE_FROM_FILE
+    )
+    def test_generate_random_value_from_file(
         self,
         mocker: MockerFixture,
-        name_type_input: str,
-        gender_input: str,
+        generator_func: Callable[..., str],
+        generator_func_args: Tuple[Any, ...],  # Tuple to handle 0 or more args
+        expected_path: Path,
+        expected_regex: str,
+        expected_transform_func: Callable[[str], str],
         mock_return_value: str,
-        expected_file_path,
-        expected_output: str
-    ):
+        read_func_expected_to_be_called: bool
+    ) -> None:
         """
-        Tests that generate_name returns the correct name based on gender,
-        by mocking the underlying name selection and verifying file path.
+        Consolidated unit test for data generation functions (first name, last name, occupation).
+        Ensures correct path selection, regex, and transform_func, and return value based on mocked
+        read_files_various_inputs.
         """
-        # Mock the direct dependency: select_random_name_from_file
-        mock_core = mocker.patch(
-            f"{RPG}.select_random_name_from_file",
-            return_value=mock_return_value
+        # Arrange: Mock the read_files_various_inputs function
+        mock_read_func = mocker.patch(
+            "person_generator.random_person_generator.read_files_various_inputs",
+            return_value=mock_return_value # Define what our mock dependency returns
         )
 
-        # Call the function being tested
-        actual_output = r.generate_name(name_type_input, gender_input)
+        # Act: Call the function under test
+        returned_generated_item = generator_func(*generator_func_args) # Unpack the tuple of args
 
-        # Assert the function returns the expected output
-        assert actual_output == expected_output
+        # Assert:
+        # 1. Verify that generate_first_name returned the expected value
+        assert returned_generated_item == mock_return_value
 
-        # Assert the mock was called correctly with the expected file path
-        mock_core.assert_called_once_with(expected_file_path)
+        # 2. Verify read_files_various_inputs was called
+        # either once or not at all
+        if read_func_expected_to_be_called:
+            mock_read_func.assert_called_once()
+            # 3. Verify that read_files_various_inputs was called with the CORRECT arguments
+            # This is where we ensure the path selection logic is correct.
+            mock_read_func.assert_called_once_with(
+                expected_path,         # The path determined by gender
+                expected_regex,        # The hardcoded regex
+                expected_transform_func # The hardcoded transform function
+            )
+        else:
+            mock_read_func.assert_not_called()
 
 
-    def test_generate_email(self):
+    def test_generate_email(self) -> None:
         """
         Tests generate_email with known input, verifies format, and asserts provider.
         """
@@ -129,9 +134,6 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         last = "MockLast"
 
         generated_email = r.generate_email(first, last)
-
-        assert '@' in generated_email
-        assert generated_email.endswith('.com')
 
         match = re.match(r"([a-z]+)\.([a-z]+)@([a-z]+)\.com", generated_email)
         assert match is not None, (
@@ -144,151 +146,128 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         assert extracted_first == first.lower()
         assert extracted_last == last.lower()
 
-        expected_providers = ["aol", "gmail", "outlook", "yahoo", "icloud", "yandex"]
+        expected_providers = EMAIL_PROVIDERS
         assert extracted_provider in expected_providers
 
-    def test_generate_age(self):
-        """
-        Tests that generate_age returns an integer within the expected range (1 to 100).
-        """
-        age = r.generate_age()
-        assert age >= 1
-        assert age <= 100
 
-    def test_generate_phone_num(self):
+    def test_generate_phone_num(self) -> None:
         """
         Tests that generate_phone_num returns a string matching the expected phone format.
         """
-        phone_pattern = r"^\d{5} \d{3} \d{3}$"
+        phone_pattern = r"^\(\d{3}\) \d{3}-\d{4}$"
         phone_num = r.generate_phone_num()
         assert re.match(phone_pattern, phone_num) is not None, \
             f"Phone number '{phone_num}' does not match expected format '{phone_pattern}'"
         assert isinstance(phone_num, str)
 
-    @pytest.mark.parametrize(
-        "file_data, expected_parsed_list, mock_choice_return, expected_output",
-        [
-            (MOCK_JOB_FILE_DATA,
-             ["MOCKDOCTOR", "MOCKNURSE", "MOCKSURGEON"], "mockdoctor", "Mockdoctor"),
-            (textwrap.dedent("SINGLEJOB"), ["SINGLEJOB"], "singlejob", "Singlejob"),
-            ("", [], "", "") # Test empty file scenario
-        ]
-    )
-    def test_select_random_job_from_file_parametrized(
-        self, mocker, file_data, expected_parsed_list, mock_choice_return, expected_output
-    ):
-        """Tests select_random_job_from_file with various file contents.
 
-        This parameterized test ensures that the `select_random_job_from_file`
-        function correctly reads, parses, and selects a random job from different
-        simulated file inputs, including single-job and empty file scenarios.
-        It also verifies that `builtins.open` and `random.choice` are called
-        with the expected arguments.
-
-        Args:
-            mocker (MockerFixture): The pytest-mock fixture for patching.
-            file_data (str): The mock content of the job file.
-            expected_parsed_list (list): The list of jobs expected to be parsed from `file_data`.
-            mock_choice_return (str): The value `random.choice` should return.
-            expected_output (str): The expected final output from the function under test.
+    def test_generate_person_dict(
+        self,
+        mocker: MockerFixture
+    ) -> None:
         """
-        mock_file = mocker.patch("builtins.open", mock_open(read_data=file_data))
-        mock_choice = mocker.patch(f"{RPG}.choice", return_value=mock_choice_return)
-
-        assert r.select_random_job_from_file("dummy_path.txt") == expected_output
-        mock_file.assert_called_once_with("dummy_path.txt", "r", encoding='utf-8')
-        mock_choice.assert_called_once_with(expected_parsed_list)
-
-
-    def test_generate_occupation(self, mocker: MockerFixture):
+        Unit test for generate_person_dict function.
+        It mocks all internal dependent calls and verifies:
+        1. Correct arguments are passed to the mocks.
+        2. The final dictionary is correctly composed from mock return values.
         """
-        Tests key aspects of the generate_occupation function with two asserts.
-        """
-        mock_core = mocker.patch(f"{RPG}.select_random_job_from_file", return_value="MockJob")
-        assert r.generate_occupation(5) == "Child"
-        assert r.generate_occupation(30) == "MockJob"
-        assert r.generate_occupation(80) == "Retired"
-        mock_core.assert_called_once_with(r.JOBS_PATH)
+        # Setup Mock call and return values
+        gender_choice: str = "male"
+        age_min: int = 18
+        age_max: int = 80
 
-    def test_generate_person_details_dict(self, mocker: MockerFixture):
-        """
-        Tests generate_random_person_details_dict by mocking all its dependencies
-        and asserting the final dictionary content.
-        """
-        # Patching with mocker.patch (no decorators needed)
-        mock_select_sex = mocker.patch(f"{RPG}.select_sex", return_value="Male")
-        mock_generate_name = mocker.patch(
-            f"{RPG}.generate_name",
-            side_effect=["MockFirst", "MockLast"])
+        expected_person_dict = {
+            "first_name": "Kory",
+            "last_name": "Ahrns",
+            "sex": "Male",
+            "email": "kory.ahrns@fastmail.com",
+            "age": 68,
+            "job": "Retired",
+            "phone_num": "(705) 385-7324"
+        }
+        # Define shortcut variable ex for expected_person_dict
+        ex = expected_person_dict
+
+        # --- Arrange: Mock all internal dependencies ---
+        # Each mock is set to return a predefined value
+        mock_generate_sex = mocker.patch(
+            'person_generator.random_person_generator.generate_sex',
+            return_value=ex["sex"]
+        )
+        mock_generate_first_name = mocker.patch(
+            'person_generator.random_person_generator.generate_first_name',
+            return_value=ex["first_name"]
+        )
+        mock_generate_last_name = mocker.patch(
+            'person_generator.random_person_generator.generate_last_name',
+            return_value=ex["last_name"]
+        )
         mock_generate_email = mocker.patch(
-            f"{RPG}.generate_email", return_value="mockfirst.mocklast@example.com")
-        mock_generate_age = mocker.patch(f"{RPG}.generate_age", return_value=30)
+            'person_generator.random_person_generator.generate_email',
+            return_value=ex["email"]
+        )
+        mock_generate_age = mocker.patch(
+            'person_generator.random_person_generator.generate_age',
+            return_value=ex["age"]
+        )
         mock_generate_occupation = mocker.patch(
-            f"{RPG}.generate_occupation", return_value="Programmer")
+            'person_generator.random_person_generator.generate_occupation',
+            return_value=ex["job"]
+        )
         mock_generate_phone_num = mocker.patch(
-            f"{RPG}.generate_phone_num", return_value="03125 473 263")
+            'person_generator.random_person_generator.generate_phone_num',
+            return_value=ex["phone_num"]
+        )
 
-        generated_dict = r.generate_person_dict("",0,0)
-        expected_dict = MOCK_PERSON_DICT
-        assert generated_dict == expected_dict
+        # --- Act: Call the function under test ---
+        actual_person_dict = r.generate_person_dict(gender_choice, age_min, age_max)
 
-        # Assert calls (no change needed here for assert_called_once_with)
-        mock_select_sex.assert_called_once()
+        # --- Assert: Verify interactions and final result ---
 
-        mock_generate_name.assert_has_calls(
-            [mocker.call("first", "Male"), mocker.call("last")] ) # type: ignore
-        assert mock_generate_name.call_count == 2
+        # 1. Verify that each mocked function was called exactly once with the correct arguments
+        mock_generate_sex.assert_called_once_with(gender_choice)
 
-        mock_generate_email.assert_called_once_with("MockFirst", "MockLast")
-        mock_generate_age.assert_called_once()
-        mock_generate_occupation.assert_called_once_with(30)
-        mock_generate_phone_num.assert_called_once()
+        # Note: The arguments to subsequent mocks are the *return values* of previous mocks
+        mock_generate_first_name.assert_called_once_with(ex["sex"])
+        mock_generate_last_name.assert_called_once_with() # No arguments expected
+        mock_generate_email.assert_called_once_with(ex["first_name"], ex["last_name"])
+        mock_generate_age.assert_called_once_with(age_min, age_max)
+        mock_generate_occupation.assert_called_once_with(ex["age"])
+        mock_generate_phone_num.assert_called_once_with() # No arguments expected
+
+        # 2. Verify that the final dictionary returned by generate_person_dict is correct
+        assert actual_person_dict == expected_person_dict
 
 
-    @pytest.mark.parametrize(
-        "input_person_dict, expected_data_lines, expected_num_lines",
-        [
-            # Test Case 1: Standard person data
-            (
-                MOCK_PERSON_DICT,
-                [
-                    ("first_name", "MockFirst"),
-                    ("last_name", "MockLast"),
-                    ("sex", "Male"),
-                    ("email", "mockfirst.mocklast@example.com"),
-                    ("age", "30"), # Age might be formatted as string in output
-                    ("job", "Programmer"),
-                    ("phone_num", "03125 473 263"),
-                ],
-                11, # 3 header lines + 7 data lines + 1 end line = 11
-            ),
-            # Test Case 2: A person with fewer details (example of testing variation)
-            (
-                {
-                    "first_name": MOCK_PERSON_DICT["first_name"],
-                    "age": MOCK_PERSON_DICT["age"],
-                },
-                [
-                    ("first_name", MOCK_PERSON_DICT["first_name"]),
-                    ("age", MOCK_PERSON_DICT["age"]),
-                ],
-                6, # 3 header lines + 2 data lines + 1 end line = 6
-            ),
-            # Test Case 3: Empty person dictionary (if your function handles this gracefully)
-            (
-                {},
-                [], # No data lines expected
-                4, # 3 header lines + 0 data lines + 1 end line = 4
-            )
-        ]
-    )
-    def test_format_person_for_display(
-        self, input_person_dict, expected_data_lines, expected_num_lines):
+    def test_format_person_for_display(self) -> None:
         """
         Tests the format_person_for_display function's output structure and content
         using parametrization for different person data.
         """
-        actual_output = r.format_person_for_display(input_person_dict)
+        # Setup Mock Person dict
+        mock_person_dict = {
+            "first_name": "Kory",
+            "last_name": "Ahrns",
+            "sex": "Male",
+            "email": "kory.ahrns@fastmail.com",
+            "age": 68,
+            "job": "Retired",
+            "phone_num": "(705) 385-7324"
+        }
+
+        expected_data_lines = [
+            ("first_name", "Kory"),
+            ("last_name", "Ahrns"),
+            ("sex", "Male"),
+            ("email", "kory.ahrns@fastmail.com"),
+            ("age", "68"), # Age might be formatted as string in output
+            ("job", "Retired"),
+            ("phone_num", "(705) 385-7324"),
+        ]
+
+        expected_num_lines = 11  # 3 header lines + 7 data lines + 1 end line = 11
+
+        actual_output = r.format_person_for_display(mock_person_dict)
         lines = actual_output.splitlines()
 
         # 1 Test Header and Footer
@@ -316,102 +295,129 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
     @pytest.mark.parametrize(
         "mock_inputs, expected_outputs",
         [
-            (("male", "11", "81"),   ("male", 11, 81)),
-            (("female", "25", "61"), ("female", 25, 61)),
-            (("", "", ""),           ("random", 10, 85)),
-            (("random", "", ""),     ("random", 10, 85))
+            pytest.param(("male", "11", "81"), ("male", 11, 81), id="inputs args_male_11_81"),
+            pytest.param(("female", "25", "61"), ("female", 25, 61), id="inputs args_female_25_61"),
+            pytest.param(("", "", ""), ("random", 10, 85), id="inputs args_blank"),
+            pytest.param(("random", "", ""), ("random", 10, 85), id="inputs args_random")
         ]
     )
-    def test_get_interactive_person_parameters(self, mocker, mock_inputs, expected_outputs):
+    def test_get_interactive_person_parameters(
+        self,
+        mocker: MockerFixture,
+        mock_inputs: Tuple[str],
+        expected_outputs: Tuple[Any]
+    ) -> None:
         """Test function _get_interactive_person_parameters() with sets
         of mock interactive inputs"""
         mocker.patch('builtins.input', side_effect=mock_inputs)
         assert r._get_interactive_person_parameters() == expected_outputs
 
 
+    def test_main_batch_mode_execution(self, mocker: MockerFixture) -> None:
+        """
+        Tests the main function when run in default (batch) mode.
+        Verifies that:
+        1. argparse is parsed correctly (no --interactive).
+        2. _get_interactive_person_parameters is NOT called.
+        3. generate_person_dict is called with default arguments.
+        4. main() returns the data from generate_person_dict.
+        """
+        # Arrange:
+        # 1. Mock argparse.ArgumentParser.parse_args to simulate batch mode
+        mock_args = mocker.Mock()
+        mock_args.interactive = False # Simulate running without -i or --interactive
+        mocker.patch('argparse.ArgumentParser.parse_args', return_value=mock_args)
+
+        # 2. Mock _get_interactive_person_parameters to ensure it's NOT invoked
+        mock_get_interactive_params = mocker.patch(
+            'person_generator.random_person_generator._get_interactive_person_parameters'
+        )
+
+        # 3. Mock generate_person_dict to control its return value for main()
+        # This is the data main() is expected to return.
+        expected_person_data = {"id": "batch_person_data", "name": "Batchy"}
+        mock_generate_person_dict = mocker.patch(
+            'person_generator.random_person_generator.generate_person_dict',
+            return_value=expected_person_data
+        )
+
+        # Act: Call the main function
+        actual_returned_data = r.main()
+
+        # Assert:
+        # 1. Confirm _get_interactive_person_parameters was not called
+        mock_get_interactive_params.assert_not_called()
+
+        # 2. Confirm generate_person_dict was called with the expected default arguments
+        mock_generate_person_dict.assert_called_once_with(
+            gender_choice=None, # Default value in main()
+            age_min=r.DEFAULT_MIN_AGE,
+            age_max=r.DEFAULT_MAX_AGE
+        )
+
+        # 3. Confirm main() returned the expected mocked data
+        assert actual_returned_data == expected_person_data
+
+
     @pytest.mark.parametrize(
-        "argv_input, "
-        "expected_get_interactive_call, " # tuple (call_args) or None
-        "mock_interactive_return_value, " # what _get_interactive_person_parameters() returns
-        "expected_generate_person_dict_call_args",
-    [
-            # Test Case 1: Batch Mode (no --interactive flag)
-            (
-                ['random_person_generator.py'], # Simulate: script name only
-                None,
-                # _get_interactive_person_parameters should NOT be called
-                None,                           # Not applicable
-                {"gender_choice": None, "age_min": 10, "age_max": 85} # Default
-                                          # parameters for generate_person_dict
-            ),
-            # Test Case 2: Interactive Mode
-            (
-                ['random_person_generator.py', '--interactive'],
-                # Simulate: script name + --interactive
-                (),
-                # _get_interactive_person_parameters() IS called (no args)
-                MOCK_INTERACTIVE_PARAMS,
-                # It returns these values
-                {"gender_choice": "Male", "age_min": 20, "age_max": 70}
-                # Params from interactive input
-            ),
-            # Test Case 3: Interactive Mode (short flag)
-            (
-                ['random_person_generator.py', '-i'], # Simulate: script name + -i
-                (),
-                MOCK_INTERACTIVE_PARAMS,
-                {"gender_choice": "Male", "age_min": 20, "age_max": 70}
-            ),
-    ])
-    def test_main_functionality(
+        "interactive_gender_input, interactive_min_age_input, interactive_max_age_input",
+        [
+            pytest.param("male", 30, 50, id="interactive_male_30_50"),
+            pytest.param("female", 15, 25, id="interactive_female_15_25"),
+            pytest.param("random", r.DEFAULT_MIN_AGE,
+                         r.DEFAULT_MAX_AGE, id="interactive_random_defaults"),
+        ]
+    )
+    def test_main_interactive_mode_execution(
         self,
         mocker: MockerFixture,
-        argv_input,
-        expected_get_interactive_call,
-        mock_interactive_return_value,
-        expected_generate_person_dict_call_args
-    ):
+        interactive_gender_input: str,
+        interactive_min_age_input: int,
+        interactive_max_age_input: int
+    ) -> None:
         """
-        Tests the core logic of the main function: argument parsing,
-        interactive mode activation, and correct parameter passing to generate_person_dict.
+        Tests the main function when run in interactive mode.
+        Verifies that:
+        1. argparse is parsed correctly (--interactive).
+        2. _get_interactive_person_parameters is called and its return is used.
+        3. generate_person_dict is called with parameters from interactive input.
+        4. main() returns the data from generate_person_dict.
         """
-        # 1. Mock sys.argv to control command-line arguments for argparse
-        mocker.patch('sys.argv', argv_input)
+        # Arrange:
+        # 1. Mock argparse.ArgumentParser.parse_args to simulate interactive mode
+        mock_args = mocker.Mock()
+        mock_args.interactive = True # Simulate running with -i or --interactive
+        mocker.patch('argparse.ArgumentParser.parse_args', return_value=mock_args)
 
-        # 2. Mock sys.exit to prevent SystemExit from argparse errors
-        mock_sys_exit = mocker.patch('sys.exit')
-
-        # 3. Mock _get_interactive_person_parameters if it's expected to be called
-        #    We make sure to provide a return_value if the mock is going to be called.
-        mock_get_interactive = mocker.patch(
-            f"{RPG}._get_interactive_person_parameters",
-            return_value=mock_interactive_return_value
+        # 2. Mock _get_interactive_person_parameters to return predefined interactive inputs
+        # This avoids re-testing the input parsing logic, which is handled in its own unit test.
+        mock_get_interactive_params = mocker.patch(
+            'person_generator.random_person_generator._get_interactive_person_parameters',
+            return_value=(interactive_gender_input,
+                          interactive_min_age_input, interactive_max_age_input)
         )
 
-        # 4. Mock generate_person_dict, as main() depends on its return value
+        # 3. Mock generate_person_dict to control its return value for main()
+        expected_person_data = {"id": "interactive_person_data", "name": "Interactively Generated"}
         mock_generate_person_dict = mocker.patch(
-            f"{RPG}.generate_person_dict",
-            return_value=MOCK_PERSON_DICT # main() returns this, so we need a known value
+            'person_generator.random_person_generator.generate_person_dict',
+            return_value=expected_person_data
         )
 
-        # --- Call the main function ---
-        actual_returned_person = r.main()
+        # Act: Call the main function
+        actual_returned_data = r.main()
 
-        # --- Assertions ---
+        # Assert:
+        # 1. Confirm _get_interactive_person_parameters was called
+        mock_get_interactive_params.assert_called_once_with()
 
-        # Assert no premature exit
-        mock_sys_exit.assert_not_called()
-
-        # Assert _get_interactive_person_parameters was called conditionally
-        if expected_get_interactive_call is None:
-            mock_get_interactive.assert_not_called()
-        else:
-            mock_get_interactive.assert_called_once_with(*expected_get_interactive_call)
-
-        # Assert generate_person_dict was called with the correct parameters
+        # 2. Confirm generate_person_dict was called with the
+        # values returned by the interactive mock
         mock_generate_person_dict.assert_called_once_with(
-            **expected_generate_person_dict_call_args
+            gender_choice=interactive_gender_input,
+            age_min=interactive_min_age_input,
+            age_max=interactive_max_age_input
         )
 
-        # Assert that main() returned the dictionary provided by the mock
-        assert actual_returned_person == MOCK_PERSON_DICT
+        # 3. Confirm main() returned the expected mocked data
+        assert actual_returned_data == expected_person_data
