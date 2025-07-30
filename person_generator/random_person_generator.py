@@ -145,7 +145,7 @@ def generate_person_dict(
     return pdict
 
 
-def format_person_for_display(person_data: Dict[str, Any]) -> str:
+def format_person_table_display(person_data: Dict[str, Any]) -> str:
     """Formatted standard print for person data"""
     formatted_output  = BORDER + "\n"
     formatted_output += "         PERSON DETAILS\n"
@@ -153,6 +153,20 @@ def format_person_for_display(person_data: Dict[str, Any]) -> str:
     for key, value in person_data.items():
         formatted_output += f"{key:<15}: {value}\n"
     formatted_output += BORDER + "\n"
+    return formatted_output
+
+
+def format_person_oneline_display(person_data: Dict[str, Any]) -> str:
+    """Formatted standard print for person data"""
+    full_name = f'{person_data["first_name"]} {person_data["last_name"]}'
+    formatted_output  = (
+        f'{full_name:18} '
+        f'{person_data["age"]:3} '
+        f'{person_data["sex"]:6} '
+        f'{person_data["job"]:21} '
+        f'{person_data["phone_num"]:14}  '
+        f'{person_data["email"]}'
+    )
     return formatted_output
 
 
@@ -239,4 +253,5 @@ if __name__ == '__main__':
 
     generated_person_data = main()
 
-    print(format_person_for_display(generated_person_data))
+    print(format_person_table_display(generated_person_data))
+    print(format_person_oneline_display(generated_person_data))

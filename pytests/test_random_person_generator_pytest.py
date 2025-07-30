@@ -239,9 +239,9 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         assert actual_person_dict == expected_person_dict
 
 
-    def test_format_person_for_display(self) -> None:
+    def test_format_person_table_display(self) -> None:
         """
-        Tests the format_person_for_display function's output structure and content
+        Tests the format_person_table_display function's output structure and content
         using parametrization for different person data.
         """
         # Setup Mock Person dict
@@ -267,7 +267,7 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
 
         expected_num_lines = 11  # 3 header lines + 7 data lines + 1 end line = 11
 
-        actual_output = r.format_person_for_display(mock_person_dict)
+        actual_output = r.format_person_table_display(mock_person_dict)
         lines = actual_output.splitlines()
 
         # 1 Test Header and Footer
@@ -290,6 +290,30 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         # 3. Overall structural check - total number of lines
         assert len(lines) == expected_num_lines, (
             f"Expected {expected_num_lines} total lines, got {len(lines)}")
+
+
+    def test_format_person_oneline_display(self) -> None:
+        """
+        Tests the format_person_oneline_display function's output structure and content
+        using parametrization for different person data.
+        """
+        # Setup Mock Person dict
+        mock_person_dict = {
+            "first_name": "Kory",
+            "last_name": "Ahrns",
+            "sex": "Male",
+            "email": "kory.ahrns@fastmail.com",
+            "age": 68,
+            "job": "Retired",
+            "phone_num": "(705) 385-7324"
+        }
+
+        expected_output = (
+            "Kory Ahrns          68 Male   Retired               "
+            "(705) 385-7324  kory.ahrns@fastmail.com"
+        )
+        actual_output = r.format_person_oneline_display(mock_person_dict)
+        assert actual_output == expected_output
 
 
     @pytest.mark.parametrize(
