@@ -9,18 +9,20 @@ import re
 from typing import Any, Tuple, Callable
 from pathlib import Path
 
-from unittest.mock import mock_open
+import argparse
+import sys
+from unittest.mock import mock_open, patch
 import pytest
 from pytest_mock import MockerFixture
 
 from person_generator.random_person_generator import EMAIL_PROVIDERS
 from person_generator.random_person_generator import BORDER
+from person_generator.random_person_generator import DEFAULT_MAX_AGE
+from person_generator.random_person_generator import DEFAULT_MIN_AGE
 from person_generator import random_person_generator as r
 
 from .conftest import TEST_READ_FILE_VARIOUS_INPUTS_CASES
 from .conftest import TEST_GENERATE_RANDOM_VALUE_FROM_FILE
-
-# BORDER: str = "-----------------------------------"
 
 
 class TestRandomPerson: # No inheritance from unittest.TestCase
@@ -445,3 +447,94 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
 
         # 3. Confirm main() returned the expected mocked data
         assert actual_returned_data == expected_person_data
+
+
+    @patch('argparse.ArgumentParser.parse_args')
+    def test_parse_args_calls_parse_args(self, mock_parse_args):
+        """
+        Tests that _parse_args internally calls parser.parse_args().
+        This is a very basic sanity check.
+        """
+        # Call the function
+        r._parse_args()
+
+        # Assert that parse_args was called
+        mock_parse_args.assert_called_once()
+
+
+    def test_parse_args_defaults(self, mocker):
+        """
+        Tests that _parse_args returns correct default values when no arguments are given.
+        """
+        # Arrange: Mock sys.argv to simulate no command-line arguments
+        # sys.argv[0] is always the script name
+        mocker.patch.object(sys, 'argv', ['random_person_generator.py'])
+
+        # Act
+        args = r._parse_args()
+
+        # Assert
+        assert args.gender is None
+        assert args.min_age == DEFAULT_MIN_AGE
+        assert args.max_age == DEFAULT_MAX_AGE
+        assert args.count == 1
+
+
+    def test_parse_args_all_options(self, mocker):
+        """
+        Tests that _parse_args correctly parses all specified command-line arguments.
+        """
+        # Arrange: Mock sys.argv to simulate specific command-line arguments
+        mocker.patch.object(sys, 'argv', [
+            'random_person_generator.py',
+            '-g', 'female',
+            '--min_age', '25',
+            '-max_age', '60',
+            '-c', '5'
+        ])
+
+        # Act
+        args = r._parse_args()
+
+        # Assert
+        assert args.gender == 'female'
+        assert args.min_age == 25
+        assert args.max_age == 60
+        assert args.count == 5
+
+
+    @pytest.mark.parametrize("gender_input, expected_gender", [
+        ("male", "male"),
+        ("female", "female"),
+    ])
+    def test_parse_args_gender_choices(self, mocker, gender_input, expected_gender):
+        """
+        Tests that _parse_args correctly parses valid gender choices.
+        """
+        # Arrange: Mock sys.argv to simulate gender inputs
+        mocker.patch.object(sys, 'argv', ['random_person_generator.py', '-g', gender_input])
+
+        # Act
+        args = r._parse_args()
+
+        # Assert
+        assert args.gender == expected_gender
+
+
+    def test_parse_args_invalid_gender_raises_error(self, mocker, capsys):
+        """
+        Tests that _parse_args correctly parses valid gender choices.
+        """
+        # Arrange: Mock sys.argv to simulate gender inputs
+        mocker.patch.object(sys, 'argv', ['random_person_generator.py', '-g', "invalid_gender"])
+
+        # Act
+        with pytest.raises(SystemExit) as excinfo:
+            r._parse_args()
+
+        # Assert
+        assert excinfo.value.code == 2
+
+        # Check that an error message was printed to stderr
+        outerr = capsys.readouterr()
+        assert "invalid choice: 'invalid_gender'" in outerr.err

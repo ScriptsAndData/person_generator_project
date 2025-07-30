@@ -243,6 +243,37 @@ def main() -> Dict[str, Any]:
     return person
 
 
+def _parse_args() -> argparse.Namespace:
+    """Parses command line arguments."""
+    parser = argparse.ArgumentParser(
+        description="Generate random person data.",
+        formatter_class=argparse.RawTextHelpFormatter
+    )
+    parser.add_argument(
+        "-g", "--gender",
+        choices=["male", "female"],
+        help="Specify gender: 'male' or 'female'. If not specified, a random gender is chosen."
+    )
+    parser.add_argument(
+        "-min_age", "--min_age",
+        type=int,
+        default=DEFAULT_MIN_AGE,
+        help=f"Minimum age for the generated person(s) (default: {DEFAULT_MIN_AGE})."
+    )
+    parser.add_argument(
+        "-max_age", "--max_age",
+        type=int,
+        default=DEFAULT_MAX_AGE,
+        help=f"Maximum age for the generated person(s) (default: {DEFAULT_MAX_AGE})."
+    )
+    parser.add_argument(
+        "-c", "--count",
+        type=int,
+        default=1,
+        help="Number of random people to generate (default: 1)."
+    )
+    return parser.parse_args()
+
 # Parses command line options, controls either batch or interactive mode, and
 # returns the generated person data.
 
@@ -255,3 +286,5 @@ if __name__ == '__main__':
 
     print(format_person_table_display(generated_person_data))
     print(format_person_oneline_display(generated_person_data))
+
+
