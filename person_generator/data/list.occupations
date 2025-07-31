@@ -63,7 +63,7 @@ Pharmacy Technician
 Ophthalmic Technician
 Psychiatric Aide
 Medical Equipment Repairer
-Biomedical Engnr
+Biomedical Engineer
 Clinical Rsrch Coord
 Epidemiologist
 Public Health Spec
@@ -312,12 +312,12 @@ Tree Surgeon
 Pest Control Technician
 Exterminator
 Environmental Scientist
-Environmental Engnr
+Environmental Engineer
 Environmental Consultant
 Environmental Health Spec
 Occupational Health Spec
 Industrial Hygienist
-Safety Engnr
+Safety Engineer
 Safety Coord
 Safety Inspector
 Safety Trainer
@@ -636,8 +636,8 @@ Safety Coord
 Security Coord
 Facilities Manager
 Maintenance Manager
-Building Engnr
-Property Engnr
+Building Engineer
+Property Engineer
 Facilities Coord
 Maintenance Technician
 Repair Technician
@@ -716,8 +716,8 @@ Housekeeping Supervisor
 Room Attendant
 Housekeeper
 Laundry Attendant
-Maintenance Engnr
-Chief Engnr
+Maintenance Engineer
+Chief Engineer
 Security Manager
 Night Manager
 Shift Manager
@@ -908,19 +908,19 @@ Consumer Rsrch Analyst
 Business Intelligence Analyst
 Data Analyst
 Data Scientist
-Data Engnr
+Data Engineer
 Database Administrator
 Systems Administrator
 Network Administrator
 Security Administrator
 Cloud Administrator
-DevOps Engnr
+DevOps Engineer
 Site Reliability Engnr
-Platform Engnr
+Platform Engineer
 Infrastructure Engnr
-Software Engnr
+Software Engineer
 Senior Software Engnr
-Lead Software Engnr
+Lead Software Engineer
 Principal Software Engnr
 Staff Software Engnr
 Architect
@@ -1027,61 +1027,61 @@ Dialogue Architect
 Music Supervision Arch
 Music Production Arch
 Record Production Arch
-Mastering Engnr
-Mixing Engnr
-Recording Engnr
-Audio Engnr
-Broadcast Engnr
-Radio Engnr
-Television Engnr
-Film Engnr
-Video Engnr
-Streaming Engnr
-Live Event Engnr
-Concert Engnr
-Tour Engnr
-Studio Engnr
-Location Engnr
-Field Engnr
-Remote Engnr
-Technical Engnr
-Maintenance Engnr
-Service Engnr
-Support Engnr
-Installation Engnr
+Mastering Engineer
+Mixing Engineer
+Recording Engineer
+Audio Engineer
+Broadcast Engineer
+Radio Engineer
+Television Engineer
+Film Engineer
+Video Engineer
+Streaming Engineer
+Live Event Engineer
+Concert Engineer
+Tour Engineer
+Studio Engineer
+Location Engineer
+Field Engineer
+Remote Engineer
+Technical Engineer
+Maintenance Engineer
+Service Engineer
+Support Engineer
+Installation Engineer
 Commissioning Engnr
-Testing Engnr
-Validation Engnr
+Testing Engineer
+Validation Engineer
 Verification Engnr
-Compliance Engnr
-Regulatory Engnr
-Standards Engnr
+Compliance Engineer
+Regulatory Engineer
+Standards Engineer
 Certification Engnr
-Inspection Engnr
-Audit Engnr
-Risk Engnr
-Safety Engnr
+Inspection Engineer
+Audit Engineer
+Risk Engineer
+Safety Engineer
 Reliability Engnr
 Availability Engnr
 Performance Engnr
 Optimization Engnr
 Efficiency Engnr
 Productivity Engnr
-Quality Engnr
-Process Engnr
+Quality Engineer
+Process Engineer
 Manufacturing Engnr
-Production Engnr
-Industrial Engnr
-Systems Engnr
-Design Engnr
+Production Engineer
+Industrial Engineer
+Systems Engineer
+Design Engineer
 Development Engnr
-Rsrch Engnr
+Rsrch Engineer
 Innovation Engnr
 Tech Engineer
 Advanced Tech Engineer
 Emerging Tech Engineer
 Future Tech Engineer
-Disruptive Tech Eng
+Disruptive Tech Engineer
 Breakthrough Tech Eng
 Cutting-Edge Tech Eng
 State-of-the-Art Tech Eng
@@ -1112,14 +1112,14 @@ Sustainable Tech Eng
 Responsible Tech Eng
 Ethical Tech Engineer
 Trustworthy Tech Eng
-Secure Tech Eng
+Secure Tech Engineer
 Private Tech Eng
 Transparent Tech Eng
 Accountable Tech Eng
 Explainable Tech Eng
 Interpretable Tech Eng
 Fair Tech Engineer
-Unbiased Tech Eng
+Unbiased Tech Engineer
 Equitable Tech Eng
 Just Tech Engineer
 Moral Tech Engineer
@@ -1151,7 +1151,7 @@ Ecological Tech Eng
 Green Tech Engineer
 Clean Tech Engineer
 Renewable Tech Eng
-Circular Tech Eng
+Circular Tech Engineer
 Regenerative Tech Eng
 Restorative Tech Eng
 Healing Tech Engineer
@@ -1191,7 +1191,7 @@ Telecomms Tech Eng
 Networking Tech Eng
 Connectivity Tech Eng
 Wireless Tech Eng
-Mobile Tech Eng
+Mobile Tech Engineer
 Satellite Tech Eng
 Fiber Optic Tech Eng
 Broadband Tech Eng
