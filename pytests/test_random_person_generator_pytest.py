@@ -312,7 +312,7 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         }
 
         expected_output = (
-            "Kory Ahrns          68 Male   Retired               "
+            "Kory Ahrns          68 Male   Retired                             "
             "(705) 385-7324  kory.ahrns@fastmail.com"
         )
         actual_output = r.format_person_oneline_display(mock_person_dict)
@@ -338,116 +338,6 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         of mock interactive inputs"""
         mocker.patch('builtins.input', side_effect=mock_inputs)
         assert r._get_interactive_person_parameters() == expected_outputs
-
-
-    def test_main_batch_mode_execution(self, mocker: MockerFixture) -> None:
-        """
-        Tests the main function when run in default (batch) mode.
-        Verifies that:
-        1. argparse is parsed correctly (no --interactive).
-        2. _get_interactive_person_parameters is NOT called.
-        3. generate_person_dict is called with default arguments.
-        4. main() returns the data from generate_person_dict.
-        """
-        # Arrange:
-        # 1. Mock argparse.ArgumentParser.parse_args to simulate batch mode
-        mock_args = mocker.Mock()
-        mock_args.interactive = False # Simulate running without -i or --interactive
-        mocker.patch('argparse.ArgumentParser.parse_args', return_value=mock_args)
-
-        # 2. Mock _get_interactive_person_parameters to ensure it's NOT invoked
-        mock_get_interactive_params = mocker.patch(
-            'person_generator.random_person_generator._get_interactive_person_parameters'
-        )
-
-        # 3. Mock generate_person_dict to control its return value for main()
-        # This is the data main() is expected to return.
-        expected_person_data = {"id": "batch_person_data", "name": "Batchy"}
-        mock_generate_person_dict = mocker.patch(
-            'person_generator.random_person_generator.generate_person_dict',
-            return_value=expected_person_data
-        )
-
-        # Act: Call the main function
-        actual_returned_data = r.main()
-
-        # Assert:
-        # 1. Confirm _get_interactive_person_parameters was not called
-        mock_get_interactive_params.assert_not_called()
-
-        # 2. Confirm generate_person_dict was called with the expected default arguments
-        mock_generate_person_dict.assert_called_once_with(
-            gender_choice=None, # Default value in main()
-            age_min=r.DEFAULT_MIN_AGE,
-            age_max=r.DEFAULT_MAX_AGE
-        )
-
-        # 3. Confirm main() returned the expected mocked data
-        assert actual_returned_data == expected_person_data
-
-
-    @pytest.mark.parametrize(
-        "interactive_gender_input, interactive_min_age_input, interactive_max_age_input",
-        [
-            pytest.param("male", 30, 50, id="interactive_male_30_50"),
-            pytest.param("female", 15, 25, id="interactive_female_15_25"),
-            pytest.param("random", r.DEFAULT_MIN_AGE,
-                         r.DEFAULT_MAX_AGE, id="interactive_random_defaults"),
-        ]
-    )
-    def test_main_interactive_mode_execution(
-        self,
-        mocker: MockerFixture,
-        interactive_gender_input: str,
-        interactive_min_age_input: int,
-        interactive_max_age_input: int
-    ) -> None:
-        """
-        Tests the main function when run in interactive mode.
-        Verifies that:
-        1. argparse is parsed correctly (--interactive).
-        2. _get_interactive_person_parameters is called and its return is used.
-        3. generate_person_dict is called with parameters from interactive input.
-        4. main() returns the data from generate_person_dict.
-        """
-        # Arrange:
-        # 1. Mock argparse.ArgumentParser.parse_args to simulate interactive mode
-        mock_args = mocker.Mock()
-        mock_args.interactive = True # Simulate running with -i or --interactive
-        mocker.patch('argparse.ArgumentParser.parse_args', return_value=mock_args)
-
-        # 2. Mock _get_interactive_person_parameters to return predefined interactive inputs
-        # This avoids re-testing the input parsing logic, which is handled in its own unit test.
-        mock_get_interactive_params = mocker.patch(
-            'person_generator.random_person_generator._get_interactive_person_parameters',
-            return_value=(interactive_gender_input,
-                          interactive_min_age_input, interactive_max_age_input)
-        )
-
-        # 3. Mock generate_person_dict to control its return value for main()
-        expected_person_data = {"id": "interactive_person_data", "name": "Interactively Generated"}
-        mock_generate_person_dict = mocker.patch(
-            'person_generator.random_person_generator.generate_person_dict',
-            return_value=expected_person_data
-        )
-
-        # Act: Call the main function
-        actual_returned_data = r.main()
-
-        # Assert:
-        # 1. Confirm _get_interactive_person_parameters was called
-        mock_get_interactive_params.assert_called_once_with()
-
-        # 2. Confirm generate_person_dict was called with the
-        # values returned by the interactive mock
-        mock_generate_person_dict.assert_called_once_with(
-            gender_choice=interactive_gender_input,
-            age_min=interactive_min_age_input,
-            age_max=interactive_max_age_input
-        )
-
-        # 3. Confirm main() returned the expected mocked data
-        assert actual_returned_data == expected_person_data
 
 
     @patch('argparse.ArgumentParser.parse_args')
@@ -602,7 +492,7 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         assert "Count must be a positive integer." in outerr.err
         assert ("Minimum age cannot be greater than maximum age." 
                     not in outerr.err) # Ensure only first error is shown
-        
+
     @pytest.mark.parametrize(
             "count", [0, 1, 5]
     )
@@ -638,4 +528,5 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
 
         assert len(returned_list) == count
         assert returned_list == [expected_person_dict] * count
+
 

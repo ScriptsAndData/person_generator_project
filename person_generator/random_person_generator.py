@@ -163,7 +163,7 @@ def format_person_oneline_display(person_data: Dict[str, Any]) -> str:
         f'{full_name:18} '
         f'{person_data["age"]:3} '
         f'{person_data["sex"]:6} '
-        f'{person_data["job"]:21} '
+        f'{person_data["job"]:35} '
         f'{person_data["phone_num"]:14}  '
         f'{person_data["email"]}'
     )
@@ -208,39 +208,6 @@ def _get_interactive_person_parameters() -> Tuple[Literal["male", "female", "ran
             print("Invalid age entered. Please enter a number.")
 
     return gender_to_generate, min_age_to_generate, max_age_to_generate
-
-
-def main() -> Dict[str, Any]:
-    """
-    Parses command line options, controls either batch or interactive mode, and 
-    returns the generated person data
-    """
-    parser = argparse.ArgumentParser(
-        description="Generate random person details. "
-        "Run in batch mode by default, or interactive mode with --interactive."
-    )
-    parser.add_argument(
-        '--interactive', '-i',
-        action='store_true',
-        help='Run in interactive mode, prompting for gender and age range.'
-    )
-    args = parser.parse_args()
-
-    gender_final = None # Default for generate_person_dict (random)
-    min_age_final = DEFAULT_MIN_AGE
-    max_age_final = DEFAULT_MAX_AGE
-
-    if args.interactive:
-        gender_final, min_age_final, max_age_final = _get_interactive_person_parameters()
-
-    # Pass parameters to the generation function
-    person = generate_person_dict(
-        gender_choice=gender_final,
-        age_min=min_age_final,
-        age_max=max_age_final
-    )
-
-    return person
 
 
 def _parse_args() -> argparse.Namespace:
@@ -299,17 +266,24 @@ def _generate_people_list(args: argparse.Namespace) -> List[Dict[str, Any]]:
     return generated_people
 
 
-# Parses command line options, controls either batch or interactive mode, and
-# returns the generated person data.
+def _display_people(people_data: List[Dict[str, Any]]) -> None:
+    """Formats and prints the list of person dictionaries."""
+    print("\nGenerated Person(s):")
+    for i, person in enumerate(people_data):
+        print(format_person_oneline_display(person))
 
-# Note: This function returns the generated data rather than printing it directly.
-# This design choice enhances testability and allows the main function to be
-# more easily imported and reused programmatically.
+
+def main() -> None: # main now returns None, as it handles printing directly
+    """
+    Main function to parse arguments, generate, and display random person data.
+    """
+    args = _parse_args()
+    _validate_args(args)
+    people_data = _generate_people_list(args)
+    _display_people(people_data)
+
+
 if __name__ == '__main__':
-
-    generated_person_data = main()
-
-    print(format_person_table_display(generated_person_data))
-    print(format_person_oneline_display(generated_person_data))
+    main()
 
 
