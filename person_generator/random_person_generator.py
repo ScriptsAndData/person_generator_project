@@ -286,6 +286,19 @@ def _validate_args(args: argparse.Namespace) -> None:
         argparse.ArgumentParser().error("Minimum age cannot be less than zero.")
 
 
+def _generate_people_list(args: argparse.Namespace) -> List[Dict[str, Any]]:
+    """Generates a list of person dictionaries based on validated arguments."""
+    generated_people: List[Dict[str, Any]] = []
+    for _ in range(args.count):
+        person = generate_person_dict(
+            gender_choice=args.gender,
+            age_min=args.min_age,
+            age_max=args.max_age
+        )
+        generated_people.append(person)
+    return generated_people
+
+
 # Parses command line options, controls either batch or interactive mode, and
 # returns the generated person data.
 

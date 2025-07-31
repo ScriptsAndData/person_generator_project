@@ -603,3 +603,39 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         assert ("Minimum age cannot be greater than maximum age." 
                     not in outerr.err) # Ensure only first error is shown
         
+    @pytest.mark.parametrize(
+            "count", [0, 1, 5]
+    )
+    def test_generate_people_list(self, mocker, count):
+        """
+        Tests that _test_generate_people_list generates 1 or more person_dict 
+        objects
+        """
+        # Arrange
+        args = SimpleNamespace(
+            count=count, min_age=10, max_age=85, gender=None)
+        expected_person_dict = {"id": "batch_person_data", "name": "Batchy"}
+
+        mock_generate_person_dict = mocker.patch(
+            'person_generator.random_person_generator.generate_person_dict',
+            return_value=expected_person_dict
+        )
+
+        # Act: Call the main function
+        returned_list = r._generate_people_list(args)
+
+        # Assert:
+        mock_generate_person_dict.call_count == count
+
+        if count > 0:
+            mock_generate_person_dict.assert_called_with(
+                gender_choice=args.gender, # Default value in main()
+                age_min=args.min_age,
+                age_max=args.max_age
+            )
+        else:
+            mock_generate_person_dict.assert_not_called()
+
+        assert len(returned_list) == count
+        assert returned_list == [expected_person_dict] * count
+
