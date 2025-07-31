@@ -9,21 +9,22 @@ import re
 from typing import Any, Tuple, Callable
 from pathlib import Path
 
-import argparse
 import sys
+from types import SimpleNamespace
 from unittest.mock import mock_open, patch
 import pytest
-from types import SimpleNamespace
 from pytest_mock import MockerFixture
 
 from person_generator.random_person_generator import EMAIL_PROVIDERS
-from person_generator.random_person_generator import BORDER
 from person_generator.random_person_generator import DEFAULT_MAX_AGE
 from person_generator.random_person_generator import DEFAULT_MIN_AGE
 from person_generator import random_person_generator as r
 
+from person_generator.display_formatters import BORDER
+
 from .conftest import TEST_READ_FILE_VARIOUS_INPUTS_CASES
 from .conftest import TEST_GENERATE_RANDOM_VALUE_FROM_FILE
+from .conftest import TEST_DISPLAY_PEOPLE_CASES
 
 
 class TestRandomPerson: # No inheritance from unittest.TestCase
@@ -258,41 +259,24 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
             "phone_num": "(705) 385-7324"
         }
 
-        expected_data_lines = [
-            ("first_name", "Kory"),
-            ("last_name", "Ahrns"),
-            ("sex", "Male"),
-            ("email", "kory.ahrns@fastmail.com"),
-            ("age", "68"), # Age might be formatted as string in output
-            ("job", "Retired"),
-            ("phone_num", "(705) 385-7324"),
-        ]
+        expected_data_str = f"""{BORDER}
+          PERSON DETAILS
+{BORDER}
+{'First Name':<15}: Kory
+{'Last Name':<15}: Ahrns
+{'Sex':<15}: Male
+{'Age':<15}: 68
+{'Job':<15}: Retired
+{'Phone Num':<15}: (705) 385-7324
+{'Email':<15}: kory.ahrns@fastmail.com
+{BORDER}"""
 
-        expected_num_lines = 11  # 3 header lines + 7 data lines + 1 end line = 11
+        expected_lines_list = expected_data_str.splitlines()
 
         actual_output = r.format_person_table_display(mock_person_dict)
-        lines = actual_output.splitlines()
+        actual_lines_list = actual_output.splitlines()
 
-        # 1 Test Header and Footer
-        assert lines[0] == BORDER
-        assert lines[1].strip() == "PERSON DETAILS"
-        assert lines[2] == BORDER
-        assert lines[-1] == BORDER
-
-        # 2 Check display of actual data lines
-        actual_data_lines = lines[3:-1] # From index 3 up to, but not including, the last line
-        assert len(actual_data_lines) == len(expected_data_lines), (
-            f"Expected {len(expected_data_lines)} data lines, got {len(actual_data_lines)}")
-
-        for i, (key, value) in enumerate(expected_data_lines):
-            expected_substring = f"{key:<15}: {value}" # Example, adjust based on actual spacing
-            # Use regex or more flexible string checking if spacing varies wildly
-            assert expected_substring in actual_data_lines[i], (
-                f"Line {i+3}: Expected '{expected_substring}' but found '{actual_data_lines[i]}'")
-
-        # 3. Overall structural check - total number of lines
-        assert len(lines) == expected_num_lines, (
-            f"Expected {expected_num_lines} total lines, got {len(lines)}")
+        assert actual_lines_list == expected_lines_list
 
 
     def test_format_person_oneline_display(self) -> None:
@@ -313,31 +297,10 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
 
         expected_output = (
             "Kory Ahrns            68 Male   Retired                       "
-            "(705) 385-7324  kory.ahrns@fastmail.com"
+            "(705) 385-7324 kory.ahrns@fastmail.com"
         )
         actual_output = r.format_person_oneline_display(mock_person_dict)
         assert actual_output == expected_output
-
-
-    @pytest.mark.parametrize(
-        "mock_inputs, expected_outputs",
-        [
-            pytest.param(("male", "11", "81"), ("male", 11, 81), id="inputs args_male_11_81"),
-            pytest.param(("female", "25", "61"), ("female", 25, 61), id="inputs args_female_25_61"),
-            pytest.param(("", "", ""), ("random", 10, 85), id="inputs args_blank"),
-            pytest.param(("random", "", ""), ("random", 10, 85), id="inputs args_random")
-        ]
-    )
-    def test_get_interactive_person_parameters(
-        self,
-        mocker: MockerFixture,
-        mock_inputs: Tuple[str],
-        expected_outputs: Tuple[Any]
-    ) -> None:
-        """Test function _get_interactive_person_parameters() with sets
-        of mock interactive inputs"""
-        mocker.patch('builtins.input', side_effect=mock_inputs)
-        assert r._get_interactive_person_parameters() == expected_outputs
 
 
     @patch('argparse.ArgumentParser.parse_args')
@@ -449,12 +412,14 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
     @pytest.mark.parametrize(
         "count, min_age, max_age, expected_error_message",
         [
-            (0, 10, 85, "Count must be a positive integer"),
-            (-200, 10, 85, "Count must be a positive integer"),
-            (1, -10, 85, "Minimum age cannot be less than zero"),
-            (1, 85, 10, "Minimum age cannot be greater than maximum age"),
+            pytest.param(0, 10, 85, "Count must be a positive integer",id="when count==0"),
+            pytest.param(-200, 10, 85, "Count must be a positive integer",id="when count==-200"),
+            pytest.param(1, -10, 85, "Minimum age cannot be less than zero",id="when min_age==-10"),
+            pytest.param(1, 85, 10, "Minimum age cannot be greater than maximum age",
+                         id="when min_age==85 and max_age==10"),
         ]
     )
+    # pylint: disable=R0917
     def test_validate_args_invalid_age_raises_error(
         self, count, min_age, max_age, expected_error_message, capsys):
         """
@@ -529,4 +494,17 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         assert len(returned_list) == count
         assert returned_list == [expected_person_dict] * count
 
+    @pytest.mark.parametrize(
+        "people_data, format_option, expected_person_display_block", 
+        TEST_DISPLAY_PEOPLE_CASES
+    )
+    def test_display_people(
+        self, people_data, format_option, expected_person_display_block) -> None:
+        """Tests that function r._display_people() returns well formatted display
+        of person dictionary data for both oneline and table display formats"""
 
+        args = SimpleNamespace(format=format_option)
+        # pylint: disable=W0212
+        actual_display_block = r._display_people(people_data, args)
+
+        assert actual_display_block == expected_person_display_block

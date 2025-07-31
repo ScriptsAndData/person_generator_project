@@ -149,3 +149,135 @@ TEST_GENERATE_RANDOM_VALUE_FROM_FILE: list[Any] = [
         str.title, "Child", False, id="occupation_unknown_age_group_defaults_to_general"
     ),
 ]
+
+
+# Relates to pytests/test_random_person_generator_pytest.py
+# @pytest.mark.parametrize(
+#     "people_data, format, expected_person_display_block",
+#     TEST_DISPLAY_PEOPLE_CASES
+# )
+# def test_display_people(self, mocker,
+#         people_data, format, expected_person_display_block) -> None:
+TEST_DISPLAY_PEOPLE_CASES: list[Any] = [
+    pytest.param(
+        [
+            {'first_name': 'Elden', 'last_name': 'Stoehr', 'sex': 'Male',
+            'email': 'elden.stoehr@icloud.com', 'age': 11, 'job': 'Child',
+            'phone_num': '(325) 276-5577'}],
+        "oneline",
+        [
+            """\
+Elden Stoehr          11 Male   Child                         (325) 276-5577 elden.stoehr@icloud.com\
+""" # pylint: disable=C0301
+        ],
+        id="oneline_1person"
+    ),
+    pytest.param(
+        [
+            {'first_name': 'Nanette', 'last_name': 'Sisk', 'sex': 'Female',
+            'email': 'nanette.sisk@gmail.com', 'age': 81, 'job': 'Retired',
+            'phone_num': '(886) 854-6420'},
+            {'first_name': 'Zena', 'last_name': 'Mortland', 'sex': 'Female',
+            'email': 'zena.mortland@fastmail.com', 'age': 22, 'job':
+            'Clinical Rsrch Scientist', 'phone_num': '(617) 226-3654'},
+            {'first_name': 'Burton', 'last_name': 'Cothron', 'sex': 'Male',
+            'email':'burton.cothron@outlook.com', 'age': 14, 'job': 'Child',
+            'phone_num': '(160) 352-2141'}
+        ],
+        "oneline",
+        [
+            """\
+Nanette Sisk          81 Female Retired                       (886) 854-6420 nanette.sisk@gmail.com\
+"""         ,
+            """\
+Zena Mortland         22 Female Clinical Rsrch Scientist      (617) 226-3654 zena.mortland@fastmail.com\
+"""         , # pylint: disable=C0301
+            """\
+Burton Cothron        14 Male   Child                         (160) 352-2141 burton.cothron@outlook.com\
+""" # pylint: disable=C0301
+        ],
+        id="oneline_3person"
+    ),
+    pytest.param(
+        [
+            {'first_name': 'Man', 'last_name': 'Etherington', 'sex': 'Male',
+             'email': 'man.etherington@yandex.com', 'age': 74, 'job': 'Retired',
+             'phone_num': '(640) 692-8287'}
+        ],
+            "table",
+        [
+"""\
+---------------------------------------------
+          PERSON DETAILS
+---------------------------------------------
+First Name     : Man
+Last Name      : Etherington
+Sex            : Male
+Age            : 74
+Job            : Retired
+Phone Num      : (640) 692-8287
+Email          : man.etherington@yandex.com
+---------------------------------------------
+"""
+        ],
+        id="table_1person"
+    ),
+        pytest.param(
+        [
+            {'first_name': 'Ellie', 'last_name': 'Kassam', 'sex': 'Female',
+             'email': 'ellie.kassam@yandex.com', 'age': 74, 'job': 'Retired',
+             'phone_num': '(875) 319-2852'},
+            {'first_name': 'Man', 'last_name': 'Etherington', 'sex': 'Male',
+             'email': 'man.etherington@yandex.com', 'age': 74, 'job': 'Retired',
+             'phone_num': '(640) 692-8287'},
+            {'first_name': 'Cyril', 'last_name': 'Gearon', 'sex': 'Male',
+             'email': 'cyril.gearon@aol.com', 'age': 23, 'job': 'Location Engineer',
+             'phone_num': '(872) 586-5338'}
+        ],
+            "table",
+        [
+"""\
+---------------------------------------------
+          PERSON DETAILS
+---------------------------------------------
+First Name     : Ellie
+Last Name      : Kassam
+Sex            : Female
+Age            : 74
+Job            : Retired
+Phone Num      : (875) 319-2852
+Email          : ellie.kassam@yandex.com
+---------------------------------------------
+""",
+
+"""\
+---------------------------------------------
+          PERSON DETAILS
+---------------------------------------------
+First Name     : Man
+Last Name      : Etherington
+Sex            : Male
+Age            : 74
+Job            : Retired
+Phone Num      : (640) 692-8287
+Email          : man.etherington@yandex.com
+---------------------------------------------
+""",
+
+"""\
+---------------------------------------------
+          PERSON DETAILS
+---------------------------------------------
+First Name     : Cyril
+Last Name      : Gearon
+Sex            : Male
+Age            : 23
+Job            : Location Engineer
+Phone Num      : (872) 586-5338
+Email          : cyril.gearon@aol.com
+---------------------------------------------
+"""
+        ],
+        id="table_3person"
+    ),
+]

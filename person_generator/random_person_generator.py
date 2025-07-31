@@ -6,8 +6,11 @@ import re
 from random import choice, randint
 import argparse
 from importlib.resources import files as resource_files
-from typing import Literal, Optional, List, Dict, Any, Tuple, Callable
+from typing import Literal, Optional, List, Dict, Any, Callable
 from pathlib import Path
+
+from person_generator.display_formatters import format_person_oneline_display
+from person_generator.display_formatters import format_person_table_display
 
 _DATA_DIR: Path = resource_files('person_generator.data')
 GEN_MALE_PATH: Path = _DATA_DIR / "dist.male.first"
@@ -20,10 +23,9 @@ RETIREMENT_AGE: int = 67
 BECOME_ADULT_AGE: int = 18
 EMAIL_PROVIDERS: List[str] = ["aol", "gmail", "outlook", "yahoo", "icloud",
                               "yandex", "protonmail", "fastmail", "hotmail"]
-BORDER: str = "-----------------------------------"
 
 
-def generate_sex(gender_choice: 
+def generate_sex(gender_choice:
         Optional[Literal["male", "female"]] = None) -> Literal["Male", "Female"]:
     """
     Randomly selects and returns either "Male" or "Female"
@@ -145,71 +147,6 @@ def generate_person_dict(
     return pdict
 
 
-def format_person_table_display(person_data: Dict[str, Any]) -> str:
-    """Formatted standard print for person data"""
-    formatted_output  = BORDER + "\n"
-    formatted_output += "         PERSON DETAILS\n"
-    formatted_output += BORDER + "\n"
-    for key, value in person_data.items():
-        formatted_output += f"{key:<15}: {value}\n"
-    formatted_output += BORDER + "\n"
-    return formatted_output
-
-
-def format_person_oneline_display(person_data: Dict[str, Any]) -> str:
-    """Formatted standard print for person data"""
-    full_name = f'{person_data["first_name"]} {person_data["last_name"]}'
-    formatted_output  = (
-        f'{full_name:20} '
-        f'{person_data["age"]:3} '
-        f'{person_data["sex"]:6} '
-        f'{person_data["job"]:29} '
-        f'{person_data["phone_num"]:14}  '
-        f'{person_data["email"]}'
-    )
-    return formatted_output
-
-
-def _get_interactive_person_parameters() -> Tuple[Literal["male", "female", "random"], int, int]:
-    """
-    Prompts the user for gender and age range and returns the validated inputs.
-    """
-    gender_to_generate = "random" # Default for interactive if user presses enter
-    min_age_to_generate = DEFAULT_MIN_AGE # Default for interactive if user presses enter
-    max_age_to_generate = DEFAULT_MAX_AGE # Default for interactive if user presses enter
-
-    # Get gender input
-    while True:
-        gender_input = input("Enter desired gender (male/female/random, default: "
-                             f"{gender_to_generate}): ").strip().lower()
-        if gender_input in ["male", "female", "random", ""]:
-            gender_to_generate = gender_input if gender_input else gender_to_generate
-            break
-        print("Invalid gender choice. Please enter 'male', 'female', or 'random'.")
-
-    # Get age range input
-    while True:
-        try:
-            min_age_str_input = input(
-                f"Enter minimum age (default {min_age_to_generate}): ").strip()
-            min_age_to_generate = int(
-                min_age_str_input) if min_age_str_input else min_age_to_generate
-
-            max_age_str_input = input(
-                f"Enter maximum age (default {max_age_to_generate}): ").strip()
-            max_age_to_generate = int(
-                max_age_str_input) if max_age_str_input else max_age_to_generate
-
-            if min_age_to_generate > max_age_to_generate:
-                print("Minimum age cannot be greater than maximum age. Please re-enter.")
-                continue # Loop again for age input
-            break # Exit age input loop if valid
-        except ValueError:
-            print("Invalid age entered. Please enter a number.")
-
-    return gender_to_generate, min_age_to_generate, max_age_to_generate
-
-
 def _parse_args() -> argparse.Namespace:
     """Parses command line arguments."""
     parser = argparse.ArgumentParser(
@@ -239,6 +176,13 @@ def _parse_args() -> argparse.Namespace:
         default=1,
         help="Number of random people to generate (default: 1)."
     )
+    parser.add_argument(
+        "-f", "--format",
+        choices=["oneline", "table"],
+        default="oneline",
+        help="Output format: 'oneline' or 'table' (default: 'oneline')."
+    )
+
     return parser.parse_args()
 
 
@@ -266,11 +210,28 @@ def _generate_people_list(args: argparse.Namespace) -> List[Dict[str, Any]]:
     return generated_people
 
 
-def _display_people(people_data: List[Dict[str, Any]]) -> None:
-    """Formats and prints the list of person dictionaries."""
-    print("\nGenerated Person(s):")
-    for i, person in enumerate(people_data):
-        print(format_person_oneline_display(person))
+def _display_people(people_data: List[Dict[str, Any]],
+                    args: argparse.Namespace) -> List[str]:
+    """
+    Formats the list of person dictionaries into a list of strings based on the chosen format.
+    Does NOT print directly.
+    """
+    display_format = args.format
+
+    formatters = {
+        "oneline": format_person_oneline_display,
+        "table": format_person_table_display
+    }
+
+    # Get the chosen formatter, default to oneline if somehow invalid
+    chosen_formatter = formatters.get(display_format, format_person_oneline_display)
+
+    formatted_person_display_blocks: List[str] = []
+    for person in people_data:
+        # Append the formatted string for each person
+        formatted_person_display_blocks.append(chosen_formatter(person))
+
+    return formatted_person_display_blocks # Return the list of formatted strings
 
 
 def main() -> None: # main now returns None, as it handles printing directly
@@ -280,10 +241,12 @@ def main() -> None: # main now returns None, as it handles printing directly
     args = _parse_args()
     _validate_args(args)
     people_data = _generate_people_list(args)
-    _display_people(people_data)
+    person_display_block = _display_people(people_data, args)
+
+    print("\nGenerated Person(s):")
+    for block in person_display_block:
+        print(block)
 
 
 if __name__ == '__main__':
     main()
-
-
