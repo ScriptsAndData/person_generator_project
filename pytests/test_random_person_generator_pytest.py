@@ -312,7 +312,7 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         }
 
         expected_output = (
-            "Kory Ahrns          68 Male   Retired                             "
+            "Kory Ahrns            68 Male   Retired                       "
             "(705) 385-7324  kory.ahrns@fastmail.com"
         )
         actual_output = r.format_person_oneline_display(mock_person_dict)

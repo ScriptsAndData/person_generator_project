@@ -160,10 +160,10 @@ def format_person_oneline_display(person_data: Dict[str, Any]) -> str:
     """Formatted standard print for person data"""
     full_name = f'{person_data["first_name"]} {person_data["last_name"]}'
     formatted_output  = (
-        f'{full_name:18} '
+        f'{full_name:20} '
         f'{person_data["age"]:3} '
         f'{person_data["sex"]:6} '
-        f'{person_data["job"]:35} '
+        f'{person_data["job"]:29} '
         f'{person_data["phone_num"]:14}  '
         f'{person_data["email"]}'
     )
