@@ -50,6 +50,7 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         "mock_file_content, file_path_arg, regex_pattern, transform_func, expected_outcome",
         TEST_READ_FILE_VARIOUS_INPUTS_CASES
     )
+    # pylint: disable=R0917
     def test_read_files_various_inputs(
             self,
             mocker: MockerFixture,
@@ -86,6 +87,7 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         "expected_transform_func, mock_return_value, read_func_expected_to_be_called"),
         TEST_GENERATE_RANDOM_VALUE_FROM_FILE
     )
+    # pylint: disable=R0917
     def test_generate_random_value_from_file(
         self,
         mocker: MockerFixture,
@@ -310,6 +312,7 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         This is a very basic sanity check.
         """
         # Call the function
+        # pylint: disable=W0212
         r._parse_args()
 
         # Assert that parse_args was called
@@ -325,6 +328,7 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         mocker.patch.object(sys, 'argv', ['random_person_generator.py'])
 
         # Act
+        # pylint: disable=W0212
         args = r._parse_args()
 
         # Assert
@@ -348,6 +352,7 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         ])
 
         # Act
+        # pylint: disable=W0212
         args = r._parse_args()
 
         # Assert
@@ -369,6 +374,7 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         mocker.patch.object(sys, 'argv', ['random_person_generator.py', '-g', gender_input])
 
         # Act
+        # pylint: disable=W0212
         args = r._parse_args()
 
         # Assert
@@ -384,6 +390,7 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
 
         # Act
         with pytest.raises(SystemExit) as excinfo:
+            # pylint: disable=W0212
             r._parse_args()
 
         # Assert
@@ -404,6 +411,7 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
 
         # Act & Assert: Call the function. If no exception is raised, the test passes.
         try:
+            # pylint: disable=W0212
             r._validate_args(args)
         except SystemExit:
             pytest.fail("_validate_args raised SystemExit for valid input.")
@@ -431,6 +439,7 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
 
         # Act & Assert
         with pytest.raises(SystemExit) as excinfo:
+            # pylint: disable=W0212
             r._validate_args(args)
 
         # Assert the exit code and error message
@@ -449,13 +458,14 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
 
         # Act & Assert
         with pytest.raises(SystemExit) as excinfo:
+            # pylint: disable=W0212
             r._validate_args(args)
 
         # Assert that only the first error message is present
         assert excinfo.value.code == 2
         outerr = capsys.readouterr()
         assert "Count must be a positive integer." in outerr.err
-        assert ("Minimum age cannot be greater than maximum age." 
+        assert ("Minimum age cannot be greater than maximum age."
                     not in outerr.err) # Ensure only first error is shown
 
     @pytest.mark.parametrize(
@@ -477,10 +487,11 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         )
 
         # Act: Call the main function
+        # pylint: disable=W0212
         returned_list = r._generate_people_list(args)
 
         # Assert:
-        mock_generate_person_dict.call_count == count
+        assert mock_generate_person_dict.call_count == count
 
         if count > 0:
             mock_generate_person_dict.assert_called_with(
