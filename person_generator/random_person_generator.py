@@ -210,7 +210,7 @@ def _generate_people_list(args: argparse.Namespace) -> List[Dict[str, Any]]:
     return generated_people
 
 
-def _display_people(people_data: List[Dict[str, Any]],
+def _display_people(people_list: List[Dict[str, Any]],
                     args: argparse.Namespace) -> List[str]:
     """
     Formats the list of person dictionaries into a list of strings based on the chosen format.
@@ -227,7 +227,7 @@ def _display_people(people_data: List[Dict[str, Any]],
     chosen_formatter = formatters.get(display_format, format_person_oneline_display)
 
     formatted_person_display_blocks: List[str] = []
-    for person in people_data:
+    for person in people_list:
         # Append the formatted string for each person
         formatted_person_display_blocks.append(chosen_formatter(person))
 
@@ -240,8 +240,8 @@ def main() -> None: # main now returns None, as it handles printing directly
     """
     args = _parse_args()
     _validate_args(args)
-    people_data = _generate_people_list(args)
-    person_display_block = _display_people(people_data, args)
+    people_list = _generate_people_list(args)
+    person_display_block = _display_people(people_list, args)
 
     print("\nGenerated Person(s):")
     for block in person_display_block:
