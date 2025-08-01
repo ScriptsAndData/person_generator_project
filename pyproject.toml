@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 # the name used to 'pip install'.
 # all lowercase and use hyphens for a PyPI package name.
 name = "person-generator-scriptsanddata"
-version = "0.1.0"
+version = "0.2.0"
 description = "A package for generating random person details"
 readme = "README.md"
 authors = [ { name="Scripts and Data" }, ]

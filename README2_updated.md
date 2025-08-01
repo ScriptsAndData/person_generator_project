@@ -74,6 +74,10 @@ The project adheres to a standard and well-organized Python package structure, p
 ```
 ## Installation
 
+To run this project, you need Python 3.10 or a newer version installed on your system. You can check your Python version by running:
+
+python --version
+
 To set up and run this project locally, follow these steps:
 
 1.  **Clone the repository:**
