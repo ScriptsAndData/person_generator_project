@@ -1,10 +1,14 @@
 """
-Test suite for functions within the display_formatters module using pytest.
+Test suite for the display_formatters module.
+
+This module contains unit tests for the functions responsible for
+formatting person data, ensuring they handle various inputs
+(empty lists, single people, multiple people) and output formats
+correctly.
 """
 import pytest
 
 from person_generator import random_person_generator as r
-from person_generator.display_formatters import BORDER
 from .conftest import TEST_FORMAT_PERSON_ONELINE_CASES
 from .conftest import TEST_FORMAT_PERSON_TABLE_CASES
 from .conftest import TEST_FORMAT_PERSON_DICT_CASES
@@ -12,6 +16,14 @@ from .conftest import TEST_FORMAT_PERSON_JSON_CASES
 
 
 class TestDisplayFormatters: # No inheritance from unittest.TestCase
+    """
+    A test suite for the formatting functions in `display_formatters.py`.
+
+    This class contains isolated unit tests for `format_person_oneline_display`,
+    `format_person_table_display`, `format_person_dict_display`, and
+    `format_person_json_display`. It uses pytest's parametrization to test
+    a wide range of inputs and expected outputs for each formatter.
+    """
 
     @pytest.mark.parametrize(
         "people_data, expected_person_display_block", 

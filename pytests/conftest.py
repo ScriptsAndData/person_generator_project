@@ -315,7 +315,7 @@ Email          : cyril.gearon@aol.com
         [
 """\
 [ { 'age': 74,\n    'email': 'ellie.kassam@yandex.com',\n    'first_name': 'Ellie',\n    'job': 'Retired',\n    'last_name': 'Kassam',\n    'phone_num': '(875) 319-2852',\n    'sex': 'Female'},\n  { 'age': 74,\n    'email': 'man.etherington@yandex.com',\n    'first_name': 'Man',\n    'job': 'Retired',\n    'last_name': 'Etherington',\n    'phone_num': '(640) 692-8287',\n    'sex': 'Male'},\n  { 'age': 23,\n    'email': 'cyril.gearon@aol.com',\n    'first_name': 'Cyril',\n    'job': 'Location Engineer',\n    'last_name': 'Gearon',\n    'phone_num': '(872) 586-5338',\n    'sex': 'Male'}]\
-"""
+""" # pylint: disable=C0301
         ],
         id="dict_3person"
     ),
@@ -348,7 +348,7 @@ Email          : cyril.gearon@aol.com
         [
 """\
 [\n  {\n    "first_name": "Ellie",\n    "last_name": "Kassam",\n    "sex": "Female",\n    "email": "ellie.kassam@yandex.com",\n    "age": 74,\n    "job": "Retired",\n    "phone_num": "(875) 319-2852"\n  },\n  {\n    "first_name": "Man",\n    "last_name": "Etherington",\n    "sex": "Male",\n    "email": "man.etherington@yandex.com",\n    "age": 74,\n    "job": "Retired",\n    "phone_num": "(640) 692-8287"\n  },\n  {\n    "first_name": "Cyril",\n    "last_name": "Gearon",\n    "sex": "Male",\n    "email": "cyril.gearon@aol.com",\n    "age": 23,\n    "job": "Location Engineer",\n    "phone_num": "(872) 586-5338"\n  }\n]\
-"""
+""" # pylint: disable=C0301
         ],
         id="json_3person"
     ),
@@ -544,7 +544,7 @@ TEST_FORMAT_PERSON_DICT_CASES: list[Any] = [
         [
 """\
 [ { 'age': 74,\n    'email': 'ellie.kassam@yandex.com',\n    'first_name': 'Ellie',\n    'job': 'Retired',\n    'last_name': 'Kassam',\n    'phone_num': '(875) 319-2852',\n    'sex': 'Female'},\n  { 'age': 74,\n    'email': 'man.etherington@yandex.com',\n    'first_name': 'Man',\n    'job': 'Retired',\n    'last_name': 'Etherington',\n    'phone_num': '(640) 692-8287',\n    'sex': 'Male'},\n  { 'age': 23,\n    'email': 'cyril.gearon@aol.com',\n    'first_name': 'Cyril',\n    'job': 'Location Engineer',\n    'last_name': 'Gearon',\n    'phone_num': '(872) 586-5338',\n    'sex': 'Male'}]\
-"""
+""" # pylint: disable=C0301
         ],
         id="3person"
     ),
@@ -591,7 +591,7 @@ TEST_FORMAT_PERSON_JSON_CASES: list[Any] = [
         [
 """\
 [\n  {\n    "first_name": "Ellie",\n    "last_name": "Kassam",\n    "sex": "Female",\n    "email": "ellie.kassam@yandex.com",\n    "age": 74,\n    "job": "Retired",\n    "phone_num": "(875) 319-2852"\n  },\n  {\n    "first_name": "Man",\n    "last_name": "Etherington",\n    "sex": "Male",\n    "email": "man.etherington@yandex.com",\n    "age": 74,\n    "job": "Retired",\n    "phone_num": "(640) 692-8287"\n  },\n  {\n    "first_name": "Cyril",\n    "last_name": "Gearon",\n    "sex": "Male",\n    "email": "cyril.gearon@aol.com",\n    "age": 23,\n    "job": "Location Engineer",\n    "phone_num": "(872) 586-5338"\n  }\n]\
-"""
+""" # pylint: disable=C0301
         ],
         id="3person"
     ),

@@ -41,7 +41,7 @@ def format_person_oneline_display(people_list: List[Dict[str, Any]]) -> List[str
             f'{person_data["email"]}'    # Email
         )
         list_formatted_person_display_strings.append(formatted_output)
-    
+
     return list_formatted_person_display_strings
 
 
@@ -74,7 +74,7 @@ def format_person_table_display(people_list: List[Dict[str, Any]]) -> List[str]:
         formatted_output += BORDER + "\n"
 
         list_formatted_person_display_strings.append(formatted_output)
-    
+
     return list_formatted_person_display_strings
 
 
@@ -91,7 +91,7 @@ def format_person_dict_display(people_list: List[Dict[str, Any]]) -> List[str]:
         A list containing a single string formatted as a pretty-printed
         Python list of dictionaries.
     """
-    list_formatted_person_display_strings = [pformat(people_list, indent=2)] 
+    list_formatted_person_display_strings = [pformat(people_list, indent=2)]
     return list_formatted_person_display_strings
 
 
@@ -108,6 +108,5 @@ def format_person_json_display(people_list: List[Dict[str, Any]]) -> List[str]:
         A list containing a single string formatted as a pretty-printed
         JSON array.
     """
-    list_formatted_person_display_strings = [json.dumps(people_list, indent=2)] 
+    list_formatted_person_display_strings = [json.dumps(people_list, indent=2)]
     return list_formatted_person_display_strings
-
