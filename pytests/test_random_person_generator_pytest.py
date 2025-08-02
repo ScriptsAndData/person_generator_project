@@ -20,11 +20,9 @@ from person_generator.random_person_generator import DEFAULT_MAX_AGE
 from person_generator.random_person_generator import DEFAULT_MIN_AGE
 from person_generator import random_person_generator as r
 
-from person_generator.display_formatters import BORDER
-
 from .conftest import TEST_READ_FILE_VARIOUS_INPUTS_CASES
 from .conftest import TEST_GENERATE_RANDOM_VALUE_FROM_FILE
-from .conftest import TEST_DISPLAY_PEOPLE_CASES
+from .conftest import TEST_FORMATTED_DISPLAY_STRINGS_CASES
 
 
 class TestRandomPerson: # No inheritance from unittest.TestCase
@@ -245,66 +243,6 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         assert actual_person_dict == expected_person_dict
 
 
-    def test_format_person_table_display(self) -> None:
-        """
-        Tests the format_person_table_display function's output structure and content
-        using parametrization for different person data.
-        """
-        # Setup Mock Person dict
-        mock_person_dict = {
-            "first_name": "Kory",
-            "last_name": "Ahrns",
-            "sex": "Male",
-            "email": "kory.ahrns@fastmail.com",
-            "age": 68,
-            "job": "Retired",
-            "phone_num": "(705) 385-7324"
-        }
-
-        expected_data_str = f"""{BORDER}
-          PERSON DETAILS
-{BORDER}
-{'First Name':<15}: Kory
-{'Last Name':<15}: Ahrns
-{'Sex':<15}: Male
-{'Age':<15}: 68
-{'Job':<15}: Retired
-{'Phone Num':<15}: (705) 385-7324
-{'Email':<15}: kory.ahrns@fastmail.com
-{BORDER}"""
-
-        expected_lines_list = expected_data_str.splitlines()
-
-        actual_output = r.format_person_table_display(mock_person_dict)
-        actual_lines_list = actual_output.splitlines()
-
-        assert actual_lines_list == expected_lines_list
-
-
-    def test_format_person_oneline_display(self) -> None:
-        """
-        Tests the format_person_oneline_display function's output structure and content
-        using parametrization for different person data.
-        """
-        # Setup Mock Person dict
-        mock_person_dict = {
-            "first_name": "Kory",
-            "last_name": "Ahrns",
-            "sex": "Male",
-            "email": "kory.ahrns@fastmail.com",
-            "age": 68,
-            "job": "Retired",
-            "phone_num": "(705) 385-7324"
-        }
-
-        expected_output = (
-            "Kory Ahrns            68 Male   Retired                       "
-            "(705) 385-7324 kory.ahrns@fastmail.com"
-        )
-        actual_output = r.format_person_oneline_display(mock_person_dict)
-        assert actual_output == expected_output
-
-
     @patch('argparse.ArgumentParser.parse_args')
     def test_parse_args_calls_parse_args(self, mock_parse_args):
         """
@@ -336,6 +274,7 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         assert args.min_age == DEFAULT_MIN_AGE
         assert args.max_age == DEFAULT_MAX_AGE
         assert args.count == 1
+        assert args.format == "oneline"
 
 
     def test_parse_args_all_options(self, mocker):
@@ -348,7 +287,8 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
             '-g', 'female',
             '--min_age', '25',
             '-max_age', '60',
-            '-c', '5'
+            '-c', '5',
+            '-f', 'json'
         ])
 
         # Act
@@ -360,7 +300,7 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         assert args.min_age == 25
         assert args.max_age == 60
         assert args.count == 5
-
+        assert args.format == 'json'
 
     @pytest.mark.parametrize("gender_input, expected_gender", [
         ("male", "male"),
@@ -407,7 +347,7 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         """
         # Arrange: Create a Namespace object with valid values
         # SimpleNamespace is great for quickly creating objects with attributes
-        args = SimpleNamespace(count=1, min_age=18, max_age=60, gender=None)
+        args = SimpleNamespace(count=1, min_age=18, max_age=60, gender=None, format="oneline")
 
         # Act & Assert: Call the function. If no exception is raised, the test passes.
         try:
@@ -435,7 +375,7 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
         """
         # Arrange
         args = SimpleNamespace(
-            count=count, min_age=min_age, max_age=max_age, gender=None)
+            count=count, min_age=min_age, max_age=max_age, gender=None, format="oneline")
 
         # Act & Assert
         with pytest.raises(SystemExit) as excinfo:
@@ -507,15 +447,15 @@ class TestRandomPerson: # No inheritance from unittest.TestCase
 
     @pytest.mark.parametrize(
         "people_data, format_option, expected_person_display_block", 
-        TEST_DISPLAY_PEOPLE_CASES
+        TEST_FORMATTED_DISPLAY_STRINGS_CASES
     )
-    def test_display_people(
+    def test_get_formatted_display_strings(
         self, people_data, format_option, expected_person_display_block) -> None:
-        """Tests that function r._display_people() returns well formatted display
+        """Tests that function r.get_formatted_display_strings() returns well formatted display
         of person dictionary data for both oneline and table display formats"""
 
         args = SimpleNamespace(format=format_option)
         # pylint: disable=W0212
-        actual_display_block = r._display_people(people_data, args)
+        actual_display_block = r.get_formatted_display_strings(people_data, args)
 
         assert actual_display_block == expected_person_display_block

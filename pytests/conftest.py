@@ -154,11 +154,17 @@ TEST_GENERATE_RANDOM_VALUE_FROM_FILE: list[Any] = [
 # Relates to pytests/test_random_person_generator_pytest.py
 # @pytest.mark.parametrize(
 #     "people_data, format, expected_person_display_block",
-#     TEST_DISPLAY_PEOPLE_CASES
+#     TEST_FORMATTED_DISPLAY_STRINGS_CASES
 # )
-# def test_display_people(self, mocker,
+# def test_get_formatted_display_strings(self, mocker,
 #         people_data, format, expected_person_display_block) -> None:
-TEST_DISPLAY_PEOPLE_CASES: list[Any] = [
+TEST_FORMATTED_DISPLAY_STRINGS_CASES: list[Any] = [
+    pytest.param(
+        [],
+        "oneline",
+        [],
+        id="oneline_empty_input"
+    ),
     pytest.param(
         [
             {'first_name': 'Elden', 'last_name': 'Stoehr', 'sex': 'Male',
@@ -279,5 +285,314 @@ Email          : cyril.gearon@aol.com
 """
         ],
         id="table_3person"
+    ),
+        pytest.param(
+        [
+            {'first_name': 'Elden', 'last_name': 'Stoehr', 'sex': 'Male',
+            'email': 'elden.stoehr@icloud.com', 'age': 11, 'job': 'Child',
+            'phone_num': '(325) 276-5577'}],
+        "dict",
+        [
+            """\
+[ { 'age': 11,\n    'email': 'elden.stoehr@icloud.com',\n    'first_name': 'Elden',\n    'job': 'Child',\n    'last_name': 'Stoehr',\n    'phone_num': '(325) 276-5577',\n    'sex': 'Male'}]\
+""" # pylint: disable=C0301
+        ],
+        id="dict_1person"
+    ),
+            pytest.param(
+        [
+            {'first_name': 'Ellie', 'last_name': 'Kassam', 'sex': 'Female',
+             'email': 'ellie.kassam@yandex.com', 'age': 74, 'job': 'Retired',
+             'phone_num': '(875) 319-2852'},
+            {'first_name': 'Man', 'last_name': 'Etherington', 'sex': 'Male',
+             'email': 'man.etherington@yandex.com', 'age': 74, 'job': 'Retired',
+             'phone_num': '(640) 692-8287'},
+            {'first_name': 'Cyril', 'last_name': 'Gearon', 'sex': 'Male',
+             'email': 'cyril.gearon@aol.com', 'age': 23, 'job': 'Location Engineer',
+             'phone_num': '(872) 586-5338'}
+        ],
+            "dict",
+        [
+"""\
+[ { 'age': 74,\n    'email': 'ellie.kassam@yandex.com',\n    'first_name': 'Ellie',\n    'job': 'Retired',\n    'last_name': 'Kassam',\n    'phone_num': '(875) 319-2852',\n    'sex': 'Female'},\n  { 'age': 74,\n    'email': 'man.etherington@yandex.com',\n    'first_name': 'Man',\n    'job': 'Retired',\n    'last_name': 'Etherington',\n    'phone_num': '(640) 692-8287',\n    'sex': 'Male'},\n  { 'age': 23,\n    'email': 'cyril.gearon@aol.com',\n    'first_name': 'Cyril',\n    'job': 'Location Engineer',\n    'last_name': 'Gearon',\n    'phone_num': '(872) 586-5338',\n    'sex': 'Male'}]\
+"""
+        ],
+        id="dict_3person"
+    ),
+        pytest.param(
+        [
+            {'first_name': 'Elden', 'last_name': 'Stoehr', 'sex': 'Male',
+            'email': 'elden.stoehr@icloud.com', 'age': 11, 'job': 'Child',
+            'phone_num': '(325) 276-5577'}],
+        "json",
+        [
+            """\
+[\n  {\n    "first_name": "Elden",\n    "last_name": "Stoehr",\n    "sex": "Male",\n    "email": "elden.stoehr@icloud.com",\n    "age": 11,\n    "job": "Child",\n    "phone_num": "(325) 276-5577"\n  }\n]\
+""" # pylint: disable=C0301
+        ],
+        id="json_1person"
+    ),
+            pytest.param(
+        [
+            {'first_name': 'Ellie', 'last_name': 'Kassam', 'sex': 'Female',
+             'email': 'ellie.kassam@yandex.com', 'age': 74, 'job': 'Retired',
+             'phone_num': '(875) 319-2852'},
+            {'first_name': 'Man', 'last_name': 'Etherington', 'sex': 'Male',
+             'email': 'man.etherington@yandex.com', 'age': 74, 'job': 'Retired',
+             'phone_num': '(640) 692-8287'},
+            {'first_name': 'Cyril', 'last_name': 'Gearon', 'sex': 'Male',
+             'email': 'cyril.gearon@aol.com', 'age': 23, 'job': 'Location Engineer',
+             'phone_num': '(872) 586-5338'}
+        ],
+            "json",
+        [
+"""\
+[\n  {\n    "first_name": "Ellie",\n    "last_name": "Kassam",\n    "sex": "Female",\n    "email": "ellie.kassam@yandex.com",\n    "age": 74,\n    "job": "Retired",\n    "phone_num": "(875) 319-2852"\n  },\n  {\n    "first_name": "Man",\n    "last_name": "Etherington",\n    "sex": "Male",\n    "email": "man.etherington@yandex.com",\n    "age": 74,\n    "job": "Retired",\n    "phone_num": "(640) 692-8287"\n  },\n  {\n    "first_name": "Cyril",\n    "last_name": "Gearon",\n    "sex": "Male",\n    "email": "cyril.gearon@aol.com",\n    "age": 23,\n    "job": "Location Engineer",\n    "phone_num": "(872) 586-5338"\n  }\n]\
+"""
+        ],
+        id="json_3person"
+    ),
+]
+
+
+# NEW CODE - UNDER CONSTRUCTION
+
+# Relates to pytests/test_display_formatters_pytest.py
+# @pytest.mark.parametrize(
+#     "people_data, expected_person_display_block",
+#     TEST_FORMAT_PERSON_ONELINE_CASES
+# )
+# def test_format_person_oneline_display(self, mocker,
+#         people_data, expected_person_display_block) -> None:
+TEST_FORMAT_PERSON_ONELINE_CASES: list[Any] = [
+    pytest.param(
+        [],
+        [],
+        id="empty_input"
+    ),
+    pytest.param(
+        [
+            {'first_name': 'Elden', 'last_name': 'Stoehr', 'sex': 'Male',
+            'email': 'elden.stoehr@icloud.com', 'age': 11, 'job': 'Child',
+            'phone_num': '(325) 276-5577'}],
+        [
+            """\
+Elden Stoehr          11 Male   Child                         (325) 276-5577 elden.stoehr@icloud.com\
+""" # pylint: disable=C0301
+        ],
+        id="1person"
+    ),
+    pytest.param(
+        [
+            {'first_name': 'Nanette', 'last_name': 'Sisk', 'sex': 'Female',
+            'email': 'nanette.sisk@gmail.com', 'age': 81, 'job': 'Retired',
+            'phone_num': '(886) 854-6420'},
+            {'first_name': 'Zena', 'last_name': 'Mortland', 'sex': 'Female',
+            'email': 'zena.mortland@fastmail.com', 'age': 22, 'job':
+            'Clinical Rsrch Scientist', 'phone_num': '(617) 226-3654'},
+            {'first_name': 'Burton', 'last_name': 'Cothron', 'sex': 'Male',
+            'email':'burton.cothron@outlook.com', 'age': 14, 'job': 'Child',
+            'phone_num': '(160) 352-2141'}
+        ],
+        [
+            """\
+Nanette Sisk          81 Female Retired                       (886) 854-6420 nanette.sisk@gmail.com\
+"""         ,
+            """\
+Zena Mortland         22 Female Clinical Rsrch Scientist      (617) 226-3654 zena.mortland@fastmail.com\
+"""         , # pylint: disable=C0301
+            """\
+Burton Cothron        14 Male   Child                         (160) 352-2141 burton.cothron@outlook.com\
+""" # pylint: disable=C0301
+        ],
+        id="3person"
+    ),
+]
+
+
+# Relates to pytests/test_display_formatters_pytest.py
+# @pytest.mark.parametrize(
+#     "people_data, expected_person_display_block",
+#     TEST_FORMAT_PERSON_TABLE_CASES
+# )
+# def test_format_person_table_display(self, mocker,
+#         people_data, expected_person_display_block) -> None:
+TEST_FORMAT_PERSON_TABLE_CASES: list[Any] = [
+    pytest.param(
+        [],
+        [],
+        id="empty_input"
+    ),
+    pytest.param(
+        [
+            {'first_name': 'Man', 'last_name': 'Etherington', 'sex': 'Male',
+             'email': 'man.etherington@yandex.com', 'age': 74, 'job': 'Retired',
+             'phone_num': '(640) 692-8287'}
+        ],
+        [
+"""\
+---------------------------------------------
+          PERSON DETAILS
+---------------------------------------------
+First Name     : Man
+Last Name      : Etherington
+Sex            : Male
+Age            : 74
+Job            : Retired
+Phone Num      : (640) 692-8287
+Email          : man.etherington@yandex.com
+---------------------------------------------
+"""
+        ],
+        id="1person"
+    ),
+    pytest.param(
+        [
+            {'first_name': 'Ellie', 'last_name': 'Kassam', 'sex': 'Female',
+             'email': 'ellie.kassam@yandex.com', 'age': 74, 'job': 'Retired',
+             'phone_num': '(875) 319-2852'},
+            {'first_name': 'Man', 'last_name': 'Etherington', 'sex': 'Male',
+             'email': 'man.etherington@yandex.com', 'age': 74, 'job': 'Retired',
+             'phone_num': '(640) 692-8287'},
+            {'first_name': 'Cyril', 'last_name': 'Gearon', 'sex': 'Male',
+             'email': 'cyril.gearon@aol.com', 'age': 23, 'job': 'Location Engineer',
+             'phone_num': '(872) 586-5338'}
+        ],
+        [
+"""\
+---------------------------------------------
+          PERSON DETAILS
+---------------------------------------------
+First Name     : Ellie
+Last Name      : Kassam
+Sex            : Female
+Age            : 74
+Job            : Retired
+Phone Num      : (875) 319-2852
+Email          : ellie.kassam@yandex.com
+---------------------------------------------
+""",
+"""\
+---------------------------------------------
+          PERSON DETAILS
+---------------------------------------------
+First Name     : Man
+Last Name      : Etherington
+Sex            : Male
+Age            : 74
+Job            : Retired
+Phone Num      : (640) 692-8287
+Email          : man.etherington@yandex.com
+---------------------------------------------
+""",
+"""\
+---------------------------------------------
+          PERSON DETAILS
+---------------------------------------------
+First Name     : Cyril
+Last Name      : Gearon
+Sex            : Male
+Age            : 23
+Job            : Location Engineer
+Phone Num      : (872) 586-5338
+Email          : cyril.gearon@aol.com
+---------------------------------------------
+"""
+        ],
+        id="3person"
+    ),
+]
+
+
+# Relates to pytests/test_display_formatters_pytest.py
+# @pytest.mark.parametrize(
+#     "people_data, expected_person_display_block",
+#     TEST_FORMAT_PERSON_DICT_CASES
+# )
+# def test_format_person_dict_display(self, mocker,
+#         people_data, expected_person_display_block) -> None:
+TEST_FORMAT_PERSON_DICT_CASES: list[Any] = [
+    pytest.param(
+        [],
+        ['[]'],
+        id="empty_input"
+    ),
+    pytest.param(
+        [
+            {'first_name': 'Elden', 'last_name': 'Stoehr', 'sex': 'Male',
+            'email': 'elden.stoehr@icloud.com', 'age': 11, 'job': 'Child',
+            'phone_num': '(325) 276-5577'}],
+        [
+            """\
+[ { 'age': 11,\n    'email': 'elden.stoehr@icloud.com',\n    'first_name': 'Elden',\n    'job': 'Child',\n    'last_name': 'Stoehr',\n    'phone_num': '(325) 276-5577',\n    'sex': 'Male'}]\
+""" # pylint: disable=C0301
+        ],
+        id="1person"
+    ),
+    pytest.param(
+        [
+            {'first_name': 'Ellie', 'last_name': 'Kassam', 'sex': 'Female',
+             'email': 'ellie.kassam@yandex.com', 'age': 74, 'job': 'Retired',
+             'phone_num': '(875) 319-2852'},
+            {'first_name': 'Man', 'last_name': 'Etherington', 'sex': 'Male',
+             'email': 'man.etherington@yandex.com', 'age': 74, 'job': 'Retired',
+             'phone_num': '(640) 692-8287'},
+            {'first_name': 'Cyril', 'last_name': 'Gearon', 'sex': 'Male',
+             'email': 'cyril.gearon@aol.com', 'age': 23, 'job': 'Location Engineer',
+             'phone_num': '(872) 586-5338'}
+        ],
+        [
+"""\
+[ { 'age': 74,\n    'email': 'ellie.kassam@yandex.com',\n    'first_name': 'Ellie',\n    'job': 'Retired',\n    'last_name': 'Kassam',\n    'phone_num': '(875) 319-2852',\n    'sex': 'Female'},\n  { 'age': 74,\n    'email': 'man.etherington@yandex.com',\n    'first_name': 'Man',\n    'job': 'Retired',\n    'last_name': 'Etherington',\n    'phone_num': '(640) 692-8287',\n    'sex': 'Male'},\n  { 'age': 23,\n    'email': 'cyril.gearon@aol.com',\n    'first_name': 'Cyril',\n    'job': 'Location Engineer',\n    'last_name': 'Gearon',\n    'phone_num': '(872) 586-5338',\n    'sex': 'Male'}]\
+"""
+        ],
+        id="3person"
+    ),
+]
+
+
+# Relates to pytests/test_display_formatters_pytest.py
+# @pytest.mark.parametrize(
+#     "people_data, expected_person_display_block",
+#     TEST_FORMAT_PERSON_JSON_CASES
+# )
+# def test_format_person_json_display(self, mocker,
+#         people_data, expected_person_display_block) -> None:
+TEST_FORMAT_PERSON_JSON_CASES: list[Any] = [
+    pytest.param(
+        [],
+        ['[]'],
+        id="empty_input"
+    ),
+    pytest.param(
+        [
+            {'first_name': 'Elden', 'last_name': 'Stoehr', 'sex': 'Male',
+            'email': 'elden.stoehr@icloud.com', 'age': 11, 'job': 'Child',
+            'phone_num': '(325) 276-5577'}],
+        [
+            """\
+[\n  {\n    "first_name": "Elden",\n    "last_name": "Stoehr",\n    "sex": "Male",\n    "email": "elden.stoehr@icloud.com",\n    "age": 11,\n    "job": "Child",\n    "phone_num": "(325) 276-5577"\n  }\n]\
+""" # pylint: disable=C0301
+        ],
+        id="1person"
+    ),
+    pytest.param(
+        [
+            {'first_name': 'Ellie', 'last_name': 'Kassam', 'sex': 'Female',
+             'email': 'ellie.kassam@yandex.com', 'age': 74, 'job': 'Retired',
+             'phone_num': '(875) 319-2852'},
+            {'first_name': 'Man', 'last_name': 'Etherington', 'sex': 'Male',
+             'email': 'man.etherington@yandex.com', 'age': 74, 'job': 'Retired',
+             'phone_num': '(640) 692-8287'},
+            {'first_name': 'Cyril', 'last_name': 'Gearon', 'sex': 'Male',
+             'email': 'cyril.gearon@aol.com', 'age': 23, 'job': 'Location Engineer',
+             'phone_num': '(872) 586-5338'}
+        ],
+        [
+"""\
+[\n  {\n    "first_name": "Ellie",\n    "last_name": "Kassam",\n    "sex": "Female",\n    "email": "ellie.kassam@yandex.com",\n    "age": 74,\n    "job": "Retired",\n    "phone_num": "(875) 319-2852"\n  },\n  {\n    "first_name": "Man",\n    "last_name": "Etherington",\n    "sex": "Male",\n    "email": "man.etherington@yandex.com",\n    "age": 74,\n    "job": "Retired",\n    "phone_num": "(640) 692-8287"\n  },\n  {\n    "first_name": "Cyril",\n    "last_name": "Gearon",\n    "sex": "Male",\n    "email": "cyril.gearon@aol.com",\n    "age": 23,\n    "job": "Location Engineer",\n    "phone_num": "(872) 586-5338"\n  }\n]\
+"""
+        ],
+        id="3person"
     ),
 ]
