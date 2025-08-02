@@ -11,6 +11,8 @@ from pathlib import Path
 
 from person_generator.display_formatters import format_person_oneline_display
 from person_generator.display_formatters import format_person_table_display
+from person_generator.display_formatters import format_person_dict_display
+from person_generator.display_formatters import format_person_json_display
 
 _DATA_DIR: Path = resource_files('person_generator.data')
 GEN_MALE_PATH: Path = _DATA_DIR / "dist.male.first"
@@ -178,7 +180,7 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "-f", "--format",
-        choices=["oneline", "table"],
+        choices=["oneline", "table", "dict", "json"],
         default="oneline",
         help="Output format: 'oneline' or 'table' (default: 'oneline')."
     )
@@ -209,8 +211,7 @@ def _generate_people_list(args: argparse.Namespace) -> List[Dict[str, Any]]:
         generated_people.append(person)
     return generated_people
 
-
-def _display_people(people_list: List[Dict[str, Any]],
+def get_formatted_display_strings(people_list: List[Dict[str, Any]],
                     args: argparse.Namespace) -> List[str]:
     """
     Formats the list of person dictionaries into a list of strings based on the chosen format.
@@ -220,19 +221,14 @@ def _display_people(people_list: List[Dict[str, Any]],
 
     formatters = {
         "oneline": format_person_oneline_display,
-        "table": format_person_table_display
+        "table": format_person_table_display,
+        "dict": format_person_dict_display,
+        "json": format_person_json_display
     }
-
     # Get the chosen formatter, default to oneline if somehow invalid
     chosen_formatter = formatters.get(display_format, format_person_oneline_display)
-
-    formatted_person_display_blocks: List[str] = []
-    for person in people_list:
-        # Append the formatted string for each person
-        formatted_person_display_blocks.append(chosen_formatter(person))
-
-    return formatted_person_display_blocks # Return the list of formatted strings
-
+    list_formatted_person_display_strings = chosen_formatter(people_list)
+    return list_formatted_person_display_strings
 
 def main() -> None: # main now returns None, as it handles printing directly
     """
@@ -241,11 +237,10 @@ def main() -> None: # main now returns None, as it handles printing directly
     args = _parse_args()
     _validate_args(args)
     people_list = _generate_people_list(args)
-    person_display_block = _display_people(people_list, args)
+    list_formatted_person_display_strings = get_formatted_display_strings(people_list, args)
 
-    print("\nGenerated Person(s):")
-    for block in person_display_block:
-        print(block)
+    for person_string in list_formatted_person_display_strings:
+        print(person_string)
 
 
 if __name__ == '__main__':
