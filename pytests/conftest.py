@@ -25,14 +25,14 @@ import pytest
 from person_generator import random_person_generator as r
 
 from person_generator.random_person_generator import (
-    _DATA_DIR,
+    get_data_file,
     GEN_MALE_PATH,
     GEN_FEMALE_PATH,
     SURNAME_PATH,
     JOBS_PATH
 )
-DATA_EMPTY_PATH: Path = _DATA_DIR / "empty.txt"
-DATA_NUMBERS_ONLY_PATH: Path = _DATA_DIR / "numbers_only.txt"
+DATA_EMPTY_PATH: Path = get_data_file("empty.txt")
+DATA_NUMBERS_ONLY_PATH: Path = get_data_file("numbers_only.txt")
 
 # Relates to pytests/test_random_person_generator_pytest.py
     # @pytest.mark.parametrize(

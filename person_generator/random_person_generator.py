@@ -14,11 +14,14 @@ from person_generator.display_formatters import format_person_table_display
 from person_generator.display_formatters import format_person_dict_display
 from person_generator.display_formatters import format_person_json_display
 
-_DATA_DIR: Path = resource_files('person_generator.data')
-GEN_MALE_PATH: Path = _DATA_DIR / "dist.male.first"
-GEN_FEMALE_PATH: Path = _DATA_DIR / "dist.female.first"
-SURNAME_PATH: Path = _DATA_DIR / "dist.all.last"
-JOBS_PATH: Path = _DATA_DIR / "list.occupations"
+def get_data_file(filename: str) -> Path:
+    """Returns the Path object for a data file."""
+    return resource_files('person_generator.data') / filename
+
+GEN_MALE_PATH: Path = get_data_file("dist.male.first")
+GEN_FEMALE_PATH: Path = get_data_file("dist.female.first")
+SURNAME_PATH: Path = get_data_file("dist.all.last")
+JOBS_PATH: Path = get_data_file("list.occupations")
 DEFAULT_MIN_AGE: int = 10
 DEFAULT_MAX_AGE: int = 85
 RETIREMENT_AGE: int = 67
