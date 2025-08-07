@@ -57,6 +57,72 @@ The `person_generator` package is capable of generating:
 
 * A **comprehensive and structured dictionary** containing all generated person details.
 
+## Demos & Test Output
+
+This section provides a quick look at the package's functionality and the output from its comprehensive test suite.
+
+### Example Usage
+The following snippets demonstrate how to generate person data from the command line in both a readable table format and a structured JSON format.
+
+```
+:person_generator_project (main)$ python person_generator/random_person_generator.py -c 6
+Retha Kortz               58 Female Biosafety Officer                (702) 673-5295 retha.kortz@fastmail.com
+Nathalie Codere           67 Female Transparent Tech Eng           (115) 373-9502 nathalie.codere@yandex.com
+Ned Schiavo               37 Male   Digital Health Tech Eng        (416) 356-9944 ned.schiavo@icloud.com
+Fumiko Rosiek             32 Female Prosecutor                       (297) 832-0816 fumiko.rosiek@gmail.com
+Randy Chiapetto           34 Male   Court Administrator              (971) 523-2739 randy.chiapetto@hotmail.com
+Shin Bretz                37 Female Costume Design Arch              (159) 542-2254 shin.bretz@gmail.com
+```text
+(py310env) vuser@DESK-DELL:person_generator_project (main)$ python person_generator/random_person_generator.py -c 3 -f json
+[
+  {
+    "first_name": "Laverna",
+    "last_name": "Bois",
+    "sex": "Female",
+    "email": "laverna.bois@icloud.com",
+    "age": 40,
+    "job": "Foley Architect",
+    "phone_num": "(277) 799-2436"
+  },
+  {
+    "first_name": "Grant",
+    "last_name": "Chaisson",
+    "sex": "Male",
+    "email": "grant.chaisson@yahoo.com",
+    "age": 10,
+    "job": "Child",
+    "phone_num": "(445) 542-9645"
+  },
+  {
+    "first_name": "Delmer",
+    "last_name": "Siemsen",
+    "sex": "Male",
+    "email": "delmer.siemsen@yandex.com",
+    "age": 78,
+    "job": "Retired",
+    "phone_num": "(480) 427-5922"
+  }
+]
+```
+
+## Test Run Output
+This snippet from the test run demonstrates the project's reliability and shows the commitment to a test-driven development workflow, with all 55 unit tests passing.
+```
+:person_generator_project (main)$ ./run_tests.sh
++ pytest -vvv -s --pdb -l pytests/
+================================= test session starts =================================
+platform linux -- Python 3.10.18, pytest-8.2.0, pluggy-1.6.0 -- /home/vuser/py310env/bin/python
+cachedir: .pytest_cache
+rootdir: /mnt/d/ORG/Ref/Python/Study/Cousera/TDD/person_generator_project
+configfile: pyproject.toml
+plugins: mock-3.14.1, anyio-4.9.0
+collected 55 items
+
+... (truncated for brevity) ...
+
+================================= 55 passed in 0.25s ==================================
+```
+
 ## Project Structure
 
 The project adheres to a standard and well-organized Python package structure, promoting clarity and maintainability:
