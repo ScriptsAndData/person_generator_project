@@ -138,27 +138,15 @@ occupation = rpg.generate_occupation(age) # Occupation based on age
 print(f"\nExample Individual Generation: {first_name} {last_name}, Age: {age}, Job: {occupation}, Email: {email}")
 ```
 
-## Unimplemented Improvements
 
-During the development and review of this project, a potential refactoring to an object-oriented (OO) design was identified. The current procedural design, which uses a list of dictionaries to represent people, is sufficient for the project's core purpose of demonstrating unit testing.
+## Unimplemented Improvements (Object-Oriented Refactoring)
 
-However, a more robust design for long-term maintainability and scalability would involve the creation of dedicated classes:
+During the development and review of this project, a potential refactoring to an object-oriented (OO) design was identified. While the current procedural design is highly effective for the project's primary goal of demonstrating robust unit testing, a more robust OO design would offer improved long-term maintainability and scalability.
 
-* **`Person` Class:** To encapsulate a person's attributes and behavior.
+This refactoring would involve the creation of dedicated classes:
 
-* **`PersonGroup` Class:** To manage the collection of `Person` objects and group-level operations.
+* **`Person` Class:** This class would encapsulate a person's attributes (e.g., first name, last name, age) and related behavior (e.g., getting a full name). This would eliminate the use of dictionaries, preventing potential `KeyError` bugs and centralizing all data-related logic.
 
-The decision was made to keep the code in its current procedural state to focus on the testing aspect. This improvement is left unimplemented to preserve the current project scope.
+* **`PersonGroup` Class:** This would be a container class to manage a collection of `Person` objects. It would be responsible for operations that act on the group as a whole, such as generating a list of formatted display strings or performing aggregate calculations.
 
-
-## Unimplemented Improvements - Object-Oriented Refactoring
-
-While the current procedural design is highly effective for this project's primary goal of demonstrating robust unit testing, a potential refactoring to an object-oriented (OO) design was considered for improved long-term maintainability and scalability.
-
-The key aspects of this potential refactoring are:
-
-* **Introducing a `Person` Class**: This class would encapsulate a person's attributes (e.g., first name, last name, age) and related behavior (e.g., getting a full name). This would eliminate the use of dictionaries, preventing potential `KeyError` bugs and centralizing all data-related logic.
-
-* **Introducing a `PersonGroup` Class**: This would be a container class to manage a collection of `Person` objects. It would be responsible for operations that act on the group as a whole, such as generating a list of formatted display strings or performing aggregate calculations.
-
-This improvement has been intentionally left unimplemented to preserve the current procedural code, which is perfectly suited for showcasing the project's testing methodology without adding unnecessary architectural complexity. This section serves as documentation of a known improvement path for future development if the project's scope were to expand.
+The decision was made to keep the code in its current procedural state to focus on the testing aspect. This improvement is left unimplemented to preserve the current project scope and serves as a documented improvement path for future development.
